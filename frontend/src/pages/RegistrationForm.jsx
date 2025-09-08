@@ -148,41 +148,29 @@ const OnamRegistrationForm = () => {
         >
           {/* Image Placeholder */}
           <div className="mb-8">
-            <div className="w-full h-64 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl border-2 border-dashed border-emerald-300 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-emerald-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <p className="text-emerald-600 font-medium">
-                  Onam Celebration Image
-                </p>
-                <p className="text-emerald-500 text-sm">
-                  Image will be added here
-                </p>
-              </div>
+            <div className="w-full h-94 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl border-2 border-dashed border-emerald-300 flex items-center justify-center">
+            <img src="/images/poster.jpg" alt="Onam Celebration" className="w-full h-full object-cover" />
+
             </div>
           </div>
 
           {/* Professional Title */}
           <div className="mb-6">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              Onam Celebration 2024
+              Onam Celebration 2025
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 mx-auto mb-4"></div>
             <p className="text-xl text-gray-600 font-light">
-              Kerala's Harvest Festival Registration
+              UNMA - Banglore Chapter Registration
+            </p>
+            <p className="text-xl text-gray-600 font-light">  
+              Date: 12th September 2025
+            </p>
+            <p className="text-xl text-gray-600 font-light">
+              Time: 10:00 AM - 5:00 PM
+            </p>
+            <p className="text-xl text-gray-600 font-light">
+              Location: 123 Main St, Anytown, USA
             </p>
           </div>
 
@@ -561,7 +549,7 @@ const OnamRegistrationForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <h5 className="font-medium text-gray-700 mb-3">
-                          Adults (₹800 each)
+                          Adults (₹750 each )
                         </h5>
                         <div className="flex items-center space-x-4">
                           <div>

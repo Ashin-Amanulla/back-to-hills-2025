@@ -29,12 +29,12 @@ const OnamRegistrationForm = () => {
       district: "",
       city: "",
       pincode: "",
-      school: "",
+      location: "",
       yearOfPassing: "",
       houseColor: "",
 
       // Alumni Status
-      isAlumni: false,
+      isAlumni: true,
       alumniVerification: false,
 
       // Event Preferences
@@ -113,26 +113,10 @@ const OnamRegistrationForm = () => {
 
   // Calculate payment amount based on attendees and pricing categories
   useEffect(() => {
-    // Check if volunteer registration - no payment required
-    const isVolunteer = watchedValues.registrationTypes?.includes("volunteer");
-
-    if (isVolunteer) {
-      setValue("proposedAmount", 0);
-      setValue("contributionAmount", 0);
-      return;
-    }
-
     if (watchedValues.isAttending && watchedValues.attendees) {
       const attendees = watchedValues.attendees;
       const adultCount = attendees?.adults || 0;
       const childCount = attendees?.children || 0;
-
-      // Check if person is alumni (2020-2025 passout)
-      const isAlumni =
-        watchedValues.isAlumni &&
-        watchedValues.graduationYear &&
-        parseInt(watchedValues.graduationYear) >= 2020 &&
-        parseInt(watchedValues.graduationYear) <= 2025;
 
       // Check if yearOfPassing is 2020-2025 for special pricing
       const isRecentPassout =
@@ -142,10 +126,7 @@ const OnamRegistrationForm = () => {
 
       let totalExpense = 0;
 
-      if (isAlumni) {
-        // Alumni get free entry
-        totalExpense = 0;
-      } else if (isRecentPassout) {
+      if (isRecentPassout) {
         // Only 1 adult gets discounted price, rest pay regular price
         const discountedAdults = Math.min(adultCount, 1);
         const regularAdults = Math.max(adultCount - 1, 0);
@@ -168,9 +149,11 @@ const OnamRegistrationForm = () => {
     watchedValues.isAlumni,
     watchedValues.graduationYear,
     watchedValues.yearOfPassing,
-    watchedValues.registrationTypes,
+    watchedValues,
     setValue,
   ]);
+
+
 
   // Handle form submission
   const onSubmit = async () => {
@@ -245,7 +228,10 @@ const OnamRegistrationForm = () => {
               Date: 12th October 2025, Sunday
             </p>
             <p className="text-xl text-gray-600 font-light">
-              Time: 10:00 AM - 5:00 PM
+              Pookkala Malsaram among houses: 6:30 AM - 9:30 AM
+            </p>
+            <p className="text-xl text-gray-600 font-light">
+              Main Program: 10:00 AM - 5:00 PM
             </p>
             <p className="text-xl text-gray-600 font-light">
               Location: Ecumenical Christian Center Whitefield, Bangalore
@@ -530,17 +516,17 @@ const OnamRegistrationForm = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  School/Institution
+                  Location they are coming from
                 </label>
                 <Controller
-                  name="school"
+                  name="location"
                   control={control}
                   render={({ field }) => (
                     <input
                       {...field}
                       type="text"
                       className="w-full px-3 sm:px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base"
-                      placeholder="Enter your school/institution name"
+                      placeholder="Enter your location"
                     />
                   )}
                 />
@@ -688,452 +674,428 @@ const OnamRegistrationForm = () => {
           </motion.div>
 
           {/* Event Preferences Section */}
-          {watchedValues.registrationTypes?.includes("attendee") && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 sm:p-6 lg:p-8"
-            >
-              <div className="mb-8">
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mr-3">
-                    <svg
-                      className="w-5 h-5 text-amber-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Event Preferences
-                  </h2>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 sm:p-6 lg:p-8"
+          >
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg
+                    className="w-5 h-5 text-amber-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
                 </div>
-                <div className="w-16 h-0.5 bg-amber-500"></div>
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Event Preferences
+                </h2>
+              </div>
+              <div className="w-16 h-0.5 bg-amber-500"></div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3">
+                <Controller
+                  name="isAttending"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      type="checkbox"
+                      id="isAttending"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="w-5 h-5 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500 focus:ring-2"
+                    />
+                  )}
+                />
+                <label
+                  htmlFor="isAttending"
+                  className="text-lg font-medium text-gray-700"
+                >
+                  I will be attending the Onam celebration
+                </label>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-center space-x-3">
-                  <Controller
-                    name="isAttending"
-                    control={control}
-                    render={({ field }) => (
-                      <input
-                        type="checkbox"
-                        id="isAttending"
-                        checked={field.value}
-                        onChange={field.onChange}
-                        className="w-5 h-5 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500 focus:ring-2"
-                      />
-                    )}
-                  />
-                  <label
-                    htmlFor="isAttending"
-                    className="text-lg font-medium text-gray-700"
-                  >
-                    I will be attending the Onam celebration
-                  </label>
-                </div>
+              {watchedValues.isAttending && (
+                <>
+                  {/* Attendee Counter */}
+                  <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                      Number of Attendees
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      <div>
+                        <h5 className="font-medium text-gray-700 mb-3">
+                          Adults (18+ years)
+                          <span className="text-sm text-gray-500 block">
+                            {(() => {
+                              const isRecentPassout =
+                                watchedValues.yearOfPassing &&
+                                parseInt(watchedValues.yearOfPassing) >= 2020 &&
+                                parseInt(watchedValues.yearOfPassing) <= 2025;
 
-                {watchedValues.isAttending && (
-                  <>
-                    {/* Attendee Counter */}
-                    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                        Number of Attendees
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        <div>
-                          <h5 className="font-medium text-gray-700 mb-3">
-                            Adults (18+ years)
-                            <span className="text-sm text-gray-500 block">
-                              {(() => {
-                                const isAlumni =
-                                  watchedValues.isAlumni &&
-                                  watchedValues.graduationYear &&
-                                  parseInt(watchedValues.graduationYear) >=
-                                    2020 &&
-                                  parseInt(watchedValues.graduationYear) <=
-                                    2025;
-
-                                const isRecentPassout =
-                                  watchedValues.yearOfPassing &&
-                                  parseInt(watchedValues.yearOfPassing) >=
-                                    2020 &&
-                                  parseInt(watchedValues.yearOfPassing) <= 2025;
-
-                                if (isAlumni)
-                                  return "FREE for 2020-2025 alumni";
-                                if (isRecentPassout)
-                                  return "₹400 each (2020-2025 passout)";
-                                return "₹750 each";
-                              })()}
-                            </span>
-                          </h5>
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current =
-                                      watchedValues.attendees?.adults || 0;
-                                    if (current > 0) {
-                                      setValue("attendees.adults", current - 1);
-                                    }
-                                  }}
-                                  className="w-10 h-10 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                              if (isRecentPassout)
+                                return "₹400 each (2020-2025 passout)";
+                              return "₹750 each";
+                            })()}
+                          </span>
+                        </h5>
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current =
+                                    watchedValues.attendees?.adults || 0;
+                                  if (current > 0) {
+                                    setValue("attendees.adults", current - 1);
+                                  }
+                                }}
+                                className="w-10 h-10 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M20 12H4"
-                                    />
-                                  </svg>
-                                </button>
-                                <span className="w-16 text-center font-semibold text-lg text-gray-900">
-                                  {watchedValues.attendees?.adults || 0}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current =
-                                      watchedValues.attendees?.adults || 0;
-                                    setValue("attendees.adults", current + 1);
-                                  }}
-                                  className="w-10 h-10 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M20 12H4"
+                                  />
+                                </svg>
+                              </button>
+                              <span className="w-16 text-center font-semibold text-lg text-gray-900">
+                                {watchedValues.attendees?.adults || 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current =
+                                    watchedValues.attendees?.adults || 0;
+                                  setValue("attendees.adults", current + 1);
+                                }}
+                                className="w-10 h-10 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                  />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                         </div>
+                      </div>
 
-                        <div>
-                          <h5 className="font-medium text-gray-700 mb-3">
-                            Children (6-17 years)
-                            <span className="text-sm text-gray-500 block">
-                              ₹400 each
-                            </span>
-                          </h5>
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current =
-                                      watchedValues.attendees?.children || 0;
-                                    if (current > 0) {
-                                      setValue(
-                                        "attendees.children",
-                                        current - 1
-                                      );
-                                    }
-                                  }}
-                                  className="w-10 h-10 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                      <div>
+                        <h5 className="font-medium text-gray-700 mb-3">
+                          Children (6-17 years)
+                          <span className="text-sm text-gray-500 block">
+                            ₹400 each
+                          </span>
+                        </h5>
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current =
+                                    watchedValues.attendees?.children || 0;
+                                  if (current > 0) {
+                                    setValue("attendees.children", current - 1);
+                                  }
+                                }}
+                                className="w-10 h-10 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M20 12H4"
-                                    />
-                                  </svg>
-                                </button>
-                                <span className="w-16 text-center font-semibold text-lg text-gray-900">
-                                  {watchedValues.attendees?.children || 0}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current =
-                                      watchedValues.attendees?.children || 0;
-                                    setValue("attendees.children", current + 1);
-                                  }}
-                                  className="w-10 h-10 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M20 12H4"
+                                  />
+                                </svg>
+                              </button>
+                              <span className="w-16 text-center font-semibold text-lg text-gray-900">
+                                {watchedValues.attendees?.children || 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current =
+                                    watchedValues.attendees?.children || 0;
+                                  setValue("attendees.children", current + 1);
+                                }}
+                                className="w-10 h-10 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                  />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                         </div>
+                      </div>
 
-                        <div>
-                          <h5 className="font-medium text-gray-700 mb-3">
-                            Infants (5 years & below)
-                            <span className="text-sm text-green-600 block">
-                              FREE
-                            </span>
-                          </h5>
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current =
-                                      watchedValues.attendees?.infants || 0;
-                                    if (current > 0) {
-                                      setValue(
-                                        "attendees.infants",
-                                        current - 1
-                                      );
-                                    }
-                                  }}
-                                  className="w-10 h-10 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                      <div>
+                        <h5 className="font-medium text-gray-700 mb-3">
+                          Infants (5 years & below)
+                          <span className="text-sm text-green-600 block">
+                            FREE
+                          </span>
+                        </h5>
+                        <div className="flex items-center space-x-4">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current =
+                                    watchedValues.attendees?.infants || 0;
+                                  if (current > 0) {
+                                    setValue("attendees.infants", current - 1);
+                                  }
+                                }}
+                                className="w-10 h-10 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M20 12H4"
-                                    />
-                                  </svg>
-                                </button>
-                                <span className="w-16 text-center font-semibold text-lg text-gray-900">
-                                  {watchedValues.attendees?.infants || 0}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current =
-                                      watchedValues.attendees?.infants || 0;
-                                    setValue("attendees.infants", current + 1);
-                                  }}
-                                  className="w-10 h-10 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M20 12H4"
+                                  />
+                                </svg>
+                              </button>
+                              <span className="w-16 text-center font-semibold text-lg text-gray-900">
+                                {watchedValues.attendees?.infants || 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current =
+                                    watchedValues.attendees?.infants || 0;
+                                  setValue("attendees.infants", current + 1);
+                                }}
+                                className="w-10 h-10 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                  />
+                                </svg>
+                              </button>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Onam Specific Preferences */}
-                    <div className="space-y-6">
-                      <h4 className="text-lg font-semibold text-gray-900">
-                        Onam Special Activities
-                      </h4>
+                  {/* Onam Specific Preferences */}
+                  <div className="space-y-6">
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Onam Special Activities
+                    </h4>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        <div className="flex items-center space-x-3">
-                          <Controller
-                            name="traditionalDress"
-                            control={control}
-                            render={({ field }) => (
-                              <input
-                                type="checkbox"
-                                id="traditionalDress"
-                                checked={field.value}
-                                onChange={field.onChange}
-                                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                              />
-                            )}
-                          />
-                          <label
-                            htmlFor="traditionalDress"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Will wear traditional Kerala dress
-                            (Mundu/Dhoti/Saree)
-                          </label>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                          <Controller
-                            name="culturalProgram"
-                            control={control}
-                            render={({ field }) => (
-                              <input
-                                type="checkbox"
-                                id="culturalProgram"
-                                checked={field.value}
-                                onChange={field.onChange}
-                                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                              />
-                            )}
-                          />
-                          <label
-                            htmlFor="culturalProgram"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Interested in cultural program participation
-                          </label>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                          <Controller
-                            name="flowerArrangement"
-                            control={control}
-                            render={({ field }) => (
-                              <input
-                                type="checkbox"
-                                id="flowerArrangement"
-                                checked={field.value}
-                                onChange={field.onChange}
-                                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                              />
-                            )}
-                          />
-                          <label
-                            htmlFor="flowerArrangement"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Will participate in Pookalam competition
-                          </label>
-                        </div>
-                      </div>
-
-                      {watchedValues.culturalProgram && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Type of Cultural Program
-                          </label>
-                          <Controller
-                            name="programType"
-                            control={control}
-                            render={({ field }) => (
-                              <select
-                                {...field}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                              >
-                                <option value="">Select program type</option>
-                                <option value="classical-dance">
-                                  Classical Dance (Kathakali/Mohiniyattam)
-                                </option>
-                                <option value="folk-dance">Folk Dance</option>
-                                <option value="music">
-                                  Music (Carnatic/Folk)
-                                </option>
-                                <option value="poetry">
-                                  Poetry Recitation
-                                </option>
-                                <option value="skit">Skit/Drama</option>
-                                <option value="other">Other</option>
-                              </select>
-                            )}
-                          />
-                        </div>
-                      )}
-
-                      {watchedValues.flowerArrangement && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Pookalam Size
-                          </label>
-                          <Controller
-                            name="pookalamSize"
-                            control={control}
-                            render={({ field }) => (
-                              <select
-                                {...field}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                              >
-                                <option value="">Select size</option>
-                                <option value="small">Small (2-3 feet)</option>
-                                <option value="medium">
-                                  Medium (4-6 feet)
-                                </option>
-                                <option value="large">Large (7-10 feet)</option>
-                                <option value="extra-large">
-                                  Extra Large (10+ feet)
-                                </option>
-                              </select>
-                            )}
-                          />
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Additional Participation Details
-                        </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="flex items-center space-x-3">
                         <Controller
-                          name="participationDetails"
+                          name="traditionalDress"
                           control={control}
                           render={({ field }) => (
-                            <textarea
-                              {...field}
-                              rows={3}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                              placeholder="Tell us more about your interests and how you'd like to participate..."
+                            <input
+                              type="checkbox"
+                              id="traditionalDress"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
                             />
                           )}
                         />
+                        <label
+                          htmlFor="traditionalDress"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Will wear traditional Kerala dress (Mundu/Dhoti/Saree)
+                        </label>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Controller
+                          name="culturalProgram"
+                          control={control}
+                          render={({ field }) => (
+                            <input
+                              type="checkbox"
+                              id="culturalProgram"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                            />
+                          )}
+                        />
+                        <label
+                          htmlFor="culturalProgram"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Interested in cultural program participation
+                        </label>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <Controller
+                          name="flowerArrangement"
+                          control={control}
+                          render={({ field }) => (
+                            <input
+                              type="checkbox"
+                              id="flowerArrangement"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                            />
+                          )}
+                        />
+                        <label
+                          htmlFor="flowerArrangement"
+                          className="text-sm font-medium text-gray-700"
+                        >
+                          Will participate in Pookalam competition
+                        </label>
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
+
+                    {watchedValues.culturalProgram && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Type of Cultural Program
+                        </label>
+                        <Controller
+                          name="programType"
+                          control={control}
+                          render={({ field }) => (
+                            <select
+                              {...field}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                            >
+                              <option value="">Select program type</option>
+                              <option value="classical-dance">
+                                Classical Dance (Kathakali/Mohiniyattam)
+                              </option>
+                              <option value="folk-dance">Folk Dance</option>
+                              <option value="music">
+                                Music (Carnatic/Folk)
+                              </option>
+                              <option value="poetry">Poetry Recitation</option>
+                              <option value="skit">Skit/Drama</option>
+                              <option value="other">Other</option>
+                            </select>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    {watchedValues.flowerArrangement && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Pookalam Size
+                        </label>
+                        <Controller
+                          name="pookalamSize"
+                          control={control}
+                          render={({ field }) => (
+                            <select
+                              {...field}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                            >
+                              <option value="">Select size</option>
+                              <option value="small">Small (2-3 feet)</option>
+                              <option value="medium">Medium (4-6 feet)</option>
+                              <option value="large">Large (7-10 feet)</option>
+                              <option value="extra-large">
+                                Extra Large (10+ feet)
+                              </option>
+                            </select>
+                          )}
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Participation Details
+                      </label>
+                      <Controller
+                        name="participationDetails"
+                        control={control}
+                        render={({ field }) => (
+                          <textarea
+                            {...field}
+                            rows={3}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+                            placeholder="Tell us more about your interests and how you'd like to participate..."
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </motion.div>
 
           {/* Payment Section */}
           <motion.div
@@ -1234,12 +1196,6 @@ const OnamRegistrationForm = () => {
                   <div className="space-y-3 text-sm text-gray-700">
                     {/* Check if person is alumni or recent passout */}
                     {(() => {
-                      const isAlumni =
-                        watchedValues.isAlumni &&
-                        watchedValues.graduationYear &&
-                        parseInt(watchedValues.graduationYear) >= 2020 &&
-                        parseInt(watchedValues.graduationYear) <= 2025;
-
                       const isRecentPassout =
                         watchedValues.yearOfPassing &&
                         parseInt(watchedValues.yearOfPassing) >= 2020 &&
@@ -1253,11 +1209,7 @@ const OnamRegistrationForm = () => {
                       let discountedAdultCount = 0;
                       let regularAdultCount = adultCount;
 
-                      if (isAlumni) {
-                        adultLabel = "FREE for 2020-2025 alumni";
-                        discountedAdultCount = adultCount;
-                        regularAdultCount = 0;
-                      } else if (isRecentPassout) {
+                      if (isRecentPassout) {
                         // Only 1 adult gets discounted price, rest pay regular price
                         discountedAdultCount = Math.min(adultCount, 1);
                         regularAdultCount = Math.max(adultCount - 1, 0);
@@ -1268,16 +1220,7 @@ const OnamRegistrationForm = () => {
                       return (
                         <>
                           {/* Adults breakdown */}
-                          {isAlumni ? (
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
-                              <span className="text-sm sm:text-base">
-                                Adults (18+ years) - {adultLabel}:
-                              </span>
-                              <span className="font-medium text-sm sm:text-base">
-                                {adultCount} × FREE = FREE
-                              </span>
-                            </div>
-                          ) : isRecentPassout ? (
+                          {isRecentPassout ? (
                             <>
                               {discountedAdultCount > 0 && (
                                 <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
@@ -1329,7 +1272,7 @@ const OnamRegistrationForm = () => {
                               {infantCount} × FREE = FREE
                             </span>
                           </div>
-                          {(isAlumni || isRecentPassout) && (
+                          {isRecentPassout && (
                             <div className="bg-green-50 p-3 rounded-lg border border-green-200">
                               <p className="text-sm text-green-700 flex items-center">
                                 <svg
@@ -1343,9 +1286,9 @@ const OnamRegistrationForm = () => {
                                     clipRule="evenodd"
                                   />
                                 </svg>
-                                {isAlumni
-                                  ? "Alumni discount applied! Adults get FREE entry."
-                                  : "Recent passout discount applied! 1 adult pays ₹400, others pay ₹750."}
+                                {isRecentPassout
+                                  ? "Recent passout discount applied! 1 adult pays ₹400, others pay ₹750."
+                                  : ""}
                               </p>
                             </div>
                           )}
@@ -1358,45 +1301,7 @@ const OnamRegistrationForm = () => {
                         <span>Total Amount:</span>
                         <span className="text-teal-600 text-xl">
                           ₹
-                          {(() => {
-                            const adultCount =
-                              watchedValues.attendees?.adults || 0;
-                            const childCount =
-                              watchedValues.attendees?.children || 0;
-
-                            const isAlumni =
-                              watchedValues.isAlumni &&
-                              watchedValues.graduationYear &&
-                              parseInt(watchedValues.graduationYear) >= 2020 &&
-                              parseInt(watchedValues.graduationYear) <= 2025;
-
-                            const isRecentPassout =
-                              watchedValues.yearOfPassing &&
-                              parseInt(watchedValues.yearOfPassing) >= 2020 &&
-                              parseInt(watchedValues.yearOfPassing) <= 2025;
-
-                            let total = 0;
-
-                            if (isAlumni) {
-                              // Alumni get free entry
-                              total += 0;
-                            } else if (isRecentPassout) {
-                              // Only 1 adult gets discounted price
-                              const discountedAdults = Math.min(adultCount, 1);
-                              const regularAdults = Math.max(adultCount - 1, 0);
-                              total +=
-                                discountedAdults * 400 + regularAdults * 750;
-                            } else {
-                              // Regular pricing
-                              total += adultCount * 750;
-                            }
-
-                            // Children and infants pricing
-                            total += childCount * 400;
-                            // Infants are free
-
-                            return total;
-                          })()}
+                          {watchedValues.proposedAmount || 0}
                         </span>
                       </div>
                     </div>
@@ -1416,7 +1321,11 @@ const OnamRegistrationForm = () => {
                       <input
                         {...field}
                         type="number"
-                        min={1}
+                        min={0}
+                        value={field.value || watchedValues.proposedAmount || 0}
+                        onChange={(e) =>
+                          field.onChange(parseInt(e.target.value) || 0)
+                        }
                         className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-base ${
                           errors.contributionAmount
                             ? "border-red-300"
@@ -1432,8 +1341,12 @@ const OnamRegistrationForm = () => {
                     </p>
                   )}
                   <p className="mt-2 text-sm text-gray-600">
-                    Suggested amount: ₹{watchedValues.proposedAmount || 0} (any
-                    amount accepted)
+                    <span className="font-semibold text-teal-600">
+                      Total Amount: ₹{watchedValues.proposedAmount || 0}
+                    </span>
+                    <span className="block mt-1 text-xs text-gray-500">
+                      (You can modify this amount if needed)
+                    </span>
                   </p>
                 </div>
 

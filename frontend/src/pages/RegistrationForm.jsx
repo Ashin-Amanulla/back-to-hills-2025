@@ -7,9 +7,6 @@ import Select from "react-select";
 
 const OnamRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [showOtpInput, setShowOtpInput] = useState(false);
 
   const {
     control,
@@ -34,6 +31,7 @@ const OnamRegistrationForm = () => {
       pincode: "",
       school: "",
       yearOfPassing: "",
+      houseColor: "",
 
       // Alumni Status
       isAlumni: false,
@@ -48,9 +46,6 @@ const OnamRegistrationForm = () => {
       },
       eventParticipation: [],
       participationDetails: "",
-      dietaryRestrictions: "",
-      accommodation: false,
-      accommodationType: "",
 
       // Onam Specific
       traditionalDress: false,
@@ -92,6 +87,7 @@ const OnamRegistrationForm = () => {
       contributionAmount: 0,
       proposedAmount: 0,
       paymentStatus: "pending",
+      paymentTransactionId: "",
     },
   });
 
@@ -117,11 +113,19 @@ const OnamRegistrationForm = () => {
 
   // Calculate payment amount based on attendees and pricing categories
   useEffect(() => {
+    // Check if volunteer registration - no payment required
+    const isVolunteer = watchedValues.registrationTypes?.includes("volunteer");
+
+    if (isVolunteer) {
+      setValue("proposedAmount", 0);
+      setValue("contributionAmount", 0);
+      return;
+    }
+
     if (watchedValues.isAttending && watchedValues.attendees) {
       const attendees = watchedValues.attendees;
       const adultCount = attendees?.adults || 0;
       const childCount = attendees?.children || 0;
-      const infantCount = attendees?.infants || 0;
 
       // Check if person is alumni (2020-2025 passout)
       const isAlumni =
@@ -136,15 +140,25 @@ const OnamRegistrationForm = () => {
         parseInt(watchedValues.yearOfPassing) >= 2020 &&
         parseInt(watchedValues.yearOfPassing) <= 2025;
 
-      // Pricing: Adults ₹750 (except alumni who get free, recent passouts pay ₹400), Minors 6-17 ₹400, Infants 5 and below free
-      const adultPrice = isAlumni ? 0 : isRecentPassout ? 400 : 750; // Alumni get free entry, recent passouts pay ₹400
-      const childPrice = 400; // 6-17 years
-      const infantPrice = 0; // 5 and below free
+      let totalExpense = 0;
 
-      const totalExpense =
-        adultCount * adultPrice +
-        childCount * childPrice +
-        infantCount * infantPrice;
+      if (isAlumni) {
+        // Alumni get free entry
+        totalExpense = 0;
+      } else if (isRecentPassout) {
+        // Only 1 adult gets discounted price, rest pay regular price
+        const discountedAdults = Math.min(adultCount, 1);
+        const regularAdults = Math.max(adultCount - 1, 0);
+        totalExpense = discountedAdults * 400 + regularAdults * 750;
+      } else {
+        // Regular pricing
+        totalExpense = adultCount * 750;
+      }
+
+      // Add children and infants pricing
+      totalExpense += childCount * 400; // 6-17 years
+      // Infants (5 and below) are free
+
       setValue("proposedAmount", totalExpense);
       setValue("contributionAmount", totalExpense);
     }
@@ -154,35 +168,13 @@ const OnamRegistrationForm = () => {
     watchedValues.isAlumni,
     watchedValues.graduationYear,
     watchedValues.yearOfPassing,
+    watchedValues.registrationTypes,
     setValue,
   ]);
 
-  // Handle OTP verification
-  const handleSendOtp = async () => {
-    if (!watchedValues.email || !watchedValues.contactNumber) {
-      toast.error("Please enter email and contact number first");
-      return;
-    }
-    setShowOtpInput(true);
-    toast.success("OTP sent to your email and phone!");
-  };
-
-  const handleVerifyOtp = () => {
-    if (otp === "1234") {
-      // Dummy OTP for demo
-      setEmailVerified(true);
-      toast.success("Email verified successfully!");
-    } else {
-      toast.error("Invalid OTP. Please try again.");
-    }
-  };
-
   // Handle form submission
   const onSubmit = async () => {
-    if (!emailVerified) {
-      toast.error("Please complete email verification before submitting");
-      return;
-    }
+    // OTP verification is optional - only show warning if not verified
 
     try {
       setIsSubmitting(true);
@@ -190,11 +182,9 @@ const OnamRegistrationForm = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       toast.success(
-        "🎉 Onam Registration Successful! Welcome to the celebration!"
+        "🎉 Onavesham 2.0 Registration Successful! Welcome to the celebration!"
       );
       reset();
-      setEmailVerified(false);
-      setShowOtpInput(false);
     } catch {
       toast.error("Registration failed. Please try again.");
     } finally {
@@ -221,51 +211,56 @@ const OnamRegistrationForm = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       {/* Professional Header */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          {/* Image Placeholder */}
+          {/* Event Poster */}
           <div className="mb-8">
-            <div className="w-full h-94 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl border-2 border-dashed border-emerald-300 flex items-center justify-center">
+            <div className="relative overflow-hidden rounded-2xl shadow-lg">
               <img
-                src="/images/poster.jpg"
-                alt="Onam Celebration"
-                className="w-full h-full object-cover"
+                src="/images/poster.jpeg"
+                alt="Onavesham 2.0 - Onam Celebration 2025"
+                className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>
           </div>
 
           {/* Professional Title */}
           <div className="mb-6">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              Onam Celebration 2025
+              Onavesham 2.0
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 mx-auto mb-4"></div>
             <p className="text-xl text-gray-600 font-light">
               UNMA - Banglore Chapter Registration
             </p>
             <p className="text-xl text-gray-600 font-light">
-              Date: 12th September 2025
+              Date: 12th October 2025, Sunday
             </p>
             <p className="text-xl text-gray-600 font-light">
               Time: 10:00 AM - 5:00 PM
             </p>
             <p className="text-xl text-gray-600 font-light">
-              Location: 123 Main St, Anytown, USA
+              Location: Ecumenical Christian Center Whitefield, Bangalore
             </p>
           </div>
 
           <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-            Join us for a grand celebration of Kerala's harvest festival
-            featuring traditional feasts, cultural programs, and the spirit of
-            unity and prosperity. Register now to be part of this memorable
-            occasion.
+            Hey Navodayans in Bengaluru! Our Onaghosham is around the corner and
+            we're getting the whole gang together—friends from 16 JNVs! Let's
+            relive those seven golden years of hostel banter, house spirit,
+            morning PT, shared plates, and endless laughs. Come hang out, swap
+            stories, bring your families, show the kids our crazy JNV energy,
+            and enjoy a Sadhya that tastes like pure nostalgia. Bring old
+            photos, wear your smiles, and let's turn Bengaluru into our Navodaya
+            campus for a day—warm, welcoming, and forever family. See you there!
           </p>
         </motion.div>
 
@@ -276,7 +271,7 @@ const OnamRegistrationForm = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-white rounded-xl border border-gray-200 shadow-lg p-8"
+            className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 sm:p-6 lg:p-8"
           >
             <div className="mb-8">
               <div className="flex items-center mb-4">
@@ -302,7 +297,7 @@ const OnamRegistrationForm = () => {
               <div className="w-16 h-0.5 bg-emerald-500"></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name <span className="text-red-500">*</span>
@@ -315,7 +310,7 @@ const OnamRegistrationForm = () => {
                     <input
                       {...field}
                       type="text"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${
+                      className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-base ${
                         errors.name ? "border-red-300" : "border-gray-300"
                       }`}
                       placeholder="Enter your full name"
@@ -347,7 +342,7 @@ const OnamRegistrationForm = () => {
                     <input
                       {...field}
                       type="email"
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all ${
+                      className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-base ${
                         errors.email ? "border-red-300" : "border-gray-300"
                       }`}
                       placeholder="Enter your email"
@@ -363,20 +358,36 @@ const OnamRegistrationForm = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  WhatsApp Number
+                  Mobile Number <span className="text-red-500">*</span>
                 </label>
                 <Controller
                   name="whatsappNumber"
                   control={control}
+                  rules={{
+                    required: "Mobile number is required",
+                    pattern: {
+                      value: /^[6-9]\d{9}$/,
+                      message: "Please enter a valid 10-digit mobile number",
+                    },
+                  }}
                   render={({ field }) => (
                     <input
                       {...field}
                       type="tel"
-                      className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
-                      placeholder="Enter WhatsApp number (optional)"
+                      className={`w-full px-3 sm:px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base ${
+                        errors.whatsappNumber
+                          ? "border-red-300"
+                          : "border-green-200"
+                      }`}
+                      placeholder="Enter your 10-digit mobile number"
                     />
                   )}
                 />
+                {errors.whatsappNumber && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.whatsappNumber.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -390,7 +401,7 @@ const OnamRegistrationForm = () => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                      className={`w-full px-3 sm:px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base ${
                         errors.gender ? "border-red-300" : "border-green-200"
                       }`}
                     >
@@ -422,7 +433,7 @@ const OnamRegistrationForm = () => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                      className={`w-full px-3 sm:px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base ${
                         errors.stateUT ? "border-red-300" : "border-green-200"
                       }`}
                     >
@@ -432,6 +443,8 @@ const OnamRegistrationForm = () => {
                       <option value="Karnataka">Karnataka</option>
                       <option value="Maharashtra">Maharashtra</option>
                       <option value="Delhi">Delhi</option>
+                      <option value="Lakshadweep">Lakshadweep</option>
+                      <option value="Mahe">Mahe</option>
                       <option value="Other">Other</option>
                     </select>
                   )}
@@ -455,7 +468,7 @@ const OnamRegistrationForm = () => {
                     render={({ field }) => (
                       <select
                         {...field}
-                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                        className={`w-full px-3 sm:px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base ${
                           errors.district
                             ? "border-red-300"
                             : "border-green-200"
@@ -477,6 +490,44 @@ const OnamRegistrationForm = () => {
                   )}
                 </div>
               )}
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  House Color for Pookkalam{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <Controller
+                  name="houseColor"
+                  control={control}
+                  rules={{ required: "House color is required" }}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className={`w-full px-3 sm:px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base ${
+                        errors.houseColor
+                          ? "border-red-300"
+                          : "border-green-200"
+                      }`}
+                    >
+                      <option value="">Select house color</option>
+                      <option value="red">Red</option>
+                      <option value="blue">Blue</option>
+                      <option value="green">Green</option>
+                      <option value="yellow">Yellow</option>
+                      <option value="orange">Orange</option>
+                      <option value="purple">Purple</option>
+                      <option value="pink">Pink</option>
+                      <option value="not-sure">Not sure</option>
+                    </select>
+                  )}
+                />
+                {errors.houseColor && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.houseColor.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   School/Institution
@@ -488,7 +539,7 @@ const OnamRegistrationForm = () => {
                     <input
                       {...field}
                       type="text"
-                      className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                      className="w-full px-3 sm:px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base"
                       placeholder="Enter your school/institution name"
                     />
                   )}
@@ -504,11 +555,11 @@ const OnamRegistrationForm = () => {
                   render={({ field }) => (
                     <select
                       {...field}
-                      className="w-full px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                      className="w-full px-3 sm:px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base"
                     >
                       <option value="">Select year of passing</option>
 
-                      {Array.from({ length: 2025 - 1993 }, (_, i) => {
+                      {Array.from({ length: 2026 - 1993 }, (_, i) => {
                         const year = 1993 + i;
                         return (
                           <option value={year.toString()}>
@@ -523,68 +574,6 @@ const OnamRegistrationForm = () => {
             </div>
 
             {/* Email Verification */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    Email Verification
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Please verify your email to continue with registration
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleSendOtp}
-                  disabled={
-                    !watchedValues.email || !watchedValues.contactNumber
-                  }
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
-                >
-                  Send OTP
-                </button>
-              </div>
-
-              {showOtpInput && (
-                <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center space-x-4">
-                    <input
-                      type="text"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Enter 4-digit OTP"
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      maxLength={4}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleVerifyOtp}
-                      className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
-                    >
-                      Verify
-                    </button>
-                  </div>
-                  {emailVerified && (
-                    <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                      <p className="text-sm text-emerald-700 flex items-center">
-                        <svg
-                          className="w-4 h-4 mr-2"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Email verified successfully!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
           </motion.div>
 
           {/* Registration Type Selection */}
@@ -592,7 +581,7 @@ const OnamRegistrationForm = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="bg-white rounded-xl border border-gray-200 shadow-lg p-8"
+            className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 sm:p-6 lg:p-8"
           >
             <div className="mb-8">
               <div className="flex items-center mb-4">
@@ -704,7 +693,7 @@ const OnamRegistrationForm = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="bg-white rounded-xl border border-gray-200 shadow-lg p-8"
+              className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 sm:p-6 lg:p-8"
             >
               <div className="mb-8">
                 <div className="flex items-center mb-4">
@@ -756,11 +745,11 @@ const OnamRegistrationForm = () => {
                 {watchedValues.isAttending && (
                   <>
                     {/* Attendee Counter */}
-                    <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h4 className="text-lg font-semibold text-gray-900 mb-4">
                         Number of Attendees
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div>
                           <h5 className="font-medium text-gray-700 mb-3">
                             Adults (18+ years)
@@ -993,7 +982,7 @@ const OnamRegistrationForm = () => {
                         Onam Special Activities
                       </h4>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div className="flex items-center space-x-3">
                           <Controller
                             name="traditionalDress"
@@ -1058,28 +1047,6 @@ const OnamRegistrationForm = () => {
                             className="text-sm font-medium text-gray-700"
                           >
                             Will participate in Pookalam competition
-                          </label>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                          <Controller
-                            name="accommodation"
-                            control={control}
-                            render={({ field }) => (
-                              <input
-                                type="checkbox"
-                                id="accommodation"
-                                checked={field.value}
-                                onChange={field.onChange}
-                                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
-                              />
-                            )}
-                          />
-                          <label
-                            htmlFor="accommodation"
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Need accommodation for the event
                           </label>
                         </div>
                       </div>
@@ -1173,7 +1140,7 @@ const OnamRegistrationForm = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="bg-white rounded-xl border border-gray-200 shadow-lg p-8"
+            className="bg-white rounded-xl border border-gray-200 shadow-lg p-4 sm:p-6 lg:p-8"
           >
             <div className="mb-8">
               <div className="flex items-center mb-4">
@@ -1200,141 +1167,322 @@ const OnamRegistrationForm = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Payment Information */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  Payment Information
-                </h4>
-                <div className="space-y-3 text-sm text-gray-700">
-                  {/* Check if person is alumni or recent passout */}
-                  {(() => {
-                    const isAlumni =
-                      watchedValues.isAlumni &&
-                      watchedValues.graduationYear &&
-                      parseInt(watchedValues.graduationYear) >= 2020 &&
-                      parseInt(watchedValues.graduationYear) <= 2025;
+              {/* Check if volunteer registration */}
 
-                    const isRecentPassout =
-                      watchedValues.yearOfPassing &&
-                      parseInt(watchedValues.yearOfPassing) >= 2020 &&
-                      parseInt(watchedValues.yearOfPassing) <= 2025;
+              <>
+                {/* Payment Information */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                    Payment Information
+                  </h4>
+                  <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h5 className="font-semibold text-blue-900 mb-4 text-center">
+                      Bank Details for Payment
+                    </h5>
 
-                    const adultCount = watchedValues.attendees?.adults || 0;
-                    const childCount = watchedValues.attendees?.children || 0;
-                    const infantCount = watchedValues.attendees?.infants || 0;
-
-                    let adultPrice = 750;
-                    let adultLabel = "₹750 each";
-                    if (isAlumni) {
-                      adultPrice = 0;
-                      adultLabel = "FREE for 2020-2025 alumni";
-                    } else if (isRecentPassout) {
-                      adultPrice = 400;
-                      adultLabel = "₹400 each (2020-2025 passout)";
-                    }
-
-                    return (
-                      <>
-                        <div className="flex justify-between">
-                          <span>Adults (18+ years) - {adultLabel}:</span>
-                          <span>
-                            {adultCount} ×{" "}
-                            {isAlumni ? "FREE" : `₹${adultPrice}`} ={" "}
-                            {isAlumni ? "FREE" : `₹${adultCount * adultPrice}`}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Children (6-17 years) - ₹400 each:</span>
-                          <span>
-                            {childCount} × ₹400 = ₹{childCount * 400}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Infants (5 years & below) - FREE:</span>
-                          <span>{infantCount} × FREE = FREE</span>
-                        </div>
-                        {(isAlumni || isRecentPassout) && (
-                          <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                            <p className="text-sm text-green-700 flex items-center">
-                              <svg
-                                className="w-4 h-4 mr-2"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                              {isAlumni
-                                ? "Alumni discount applied! Adults get FREE entry."
-                                : "Recent passout discount applied! Adults pay ₹400 instead of ₹750."}
+                    {/* Mobile-first responsive layout */}
+                    <div className="space-y-4">
+                      {/* Bank Details */}
+                      <div className="bg-white p-4 rounded-lg border border-blue-100">
+                        <h6 className="font-semibold text-blue-800 mb-3 text-sm">
+                          Bank Account Details:
+                        </h6>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-blue-800">
+                          <div className="space-y-2">
+                            <p>
+                              <strong>Account Holder:</strong> ANU M B
+                            </p>
+                            <p>
+                              <strong>Account Number:</strong> 002001544868
+                            </p>
+                            <p>
+                              <strong>IFSC Code:</strong> ICIC0000020
                             </p>
                           </div>
-                        )}
-                      </>
-                    );
-                  })()}
+                          <div className="space-y-2">
+                            <p>
+                              <strong>Branch:</strong> MUMBAI POWAI
+                            </p>
+                            <p>
+                              <strong>Account Type:</strong> SAVING
+                            </p>
+                            <p>
+                              <strong>UPI ID:</strong> anumbhaskaran@okicici
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className="border-t border-gray-300 pt-3 mt-3">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total Amount:</span>
-                      <span className="text-teal-600">
-                        ₹{watchedValues.proposedAmount || 0}
-                      </span>
+                      {/* UPI QR Code */}
+                      <div className="bg-white p-4 rounded-lg border border-blue-100 text-center">
+                        <h6 className="font-semibold text-blue-800 mb-3 text-sm">
+                          Scan QR Code for UPI Payment:
+                        </h6>
+                        <div className="flex justify-center">
+                          <img
+                            src="/images/upi.jpeg"
+                            alt="UPI QR Code"
+                            className="max-w-48 h-auto rounded-lg shadow-sm border border-gray-200"
+                          />
+                        </div>
+                        <p className="text-xs text-blue-600 mt-2">
+                          Scan with any UPI app to pay instantly
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3 text-sm text-gray-700">
+                    {/* Check if person is alumni or recent passout */}
+                    {(() => {
+                      const isAlumni =
+                        watchedValues.isAlumni &&
+                        watchedValues.graduationYear &&
+                        parseInt(watchedValues.graduationYear) >= 2020 &&
+                        parseInt(watchedValues.graduationYear) <= 2025;
+
+                      const isRecentPassout =
+                        watchedValues.yearOfPassing &&
+                        parseInt(watchedValues.yearOfPassing) >= 2020 &&
+                        parseInt(watchedValues.yearOfPassing) <= 2025;
+
+                      const adultCount = watchedValues.attendees?.adults || 0;
+                      const childCount = watchedValues.attendees?.children || 0;
+                      const infantCount = watchedValues.attendees?.infants || 0;
+
+                      let adultLabel = "₹750 each";
+                      let discountedAdultCount = 0;
+                      let regularAdultCount = adultCount;
+
+                      if (isAlumni) {
+                        adultLabel = "FREE for 2020-2025 alumni";
+                        discountedAdultCount = adultCount;
+                        regularAdultCount = 0;
+                      } else if (isRecentPassout) {
+                        // Only 1 adult gets discounted price, rest pay regular price
+                        discountedAdultCount = Math.min(adultCount, 1);
+                        regularAdultCount = Math.max(adultCount - 1, 0);
+                        adultLabel =
+                          "₹400 each (1 adult - 2020-2025 passout) + ₹750 each (others)";
+                      }
+
+                      return (
+                        <>
+                          {/* Adults breakdown */}
+                          {isAlumni ? (
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-sm sm:text-base">
+                                Adults (18+ years) - {adultLabel}:
+                              </span>
+                              <span className="font-medium text-sm sm:text-base">
+                                {adultCount} × FREE = FREE
+                              </span>
+                            </div>
+                          ) : isRecentPassout ? (
+                            <>
+                              {discountedAdultCount > 0 && (
+                                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                                  <span className="text-sm sm:text-base">
+                                    Adults (18+ years) - 2020-2025 passout (1
+                                    adult):
+                                  </span>
+                                  <span className="font-medium text-sm sm:text-base">
+                                    {discountedAdultCount} × ₹400 = ₹
+                                    {discountedAdultCount * 400}
+                                  </span>
+                                </div>
+                              )}
+                              {regularAdultCount > 0 && (
+                                <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                                  <span className="text-sm sm:text-base">
+                                    Adults (18+ years) - Regular price:
+                                  </span>
+                                  <span className="font-medium text-sm sm:text-base">
+                                    {regularAdultCount} × ₹750 = ₹
+                                    {regularAdultCount * 750}
+                                  </span>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                              <span className="text-sm sm:text-base">
+                                Adults (18+ years) - {adultLabel}:
+                              </span>
+                              <span className="font-medium text-sm sm:text-base">
+                                {adultCount} × ₹750 = ₹{adultCount * 750}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                            <span className="text-sm sm:text-base">
+                              Children (6-17 years) - ₹400 each:
+                            </span>
+                            <span className="font-medium text-sm sm:text-base">
+                              {childCount} × ₹400 = ₹{childCount * 400}
+                            </span>
+                          </div>
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                            <span className="text-sm sm:text-base">
+                              Infants (5 years & below) - FREE:
+                            </span>
+                            <span className="font-medium text-sm sm:text-base">
+                              {infantCount} × FREE = FREE
+                            </span>
+                          </div>
+                          {(isAlumni || isRecentPassout) && (
+                            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                              <p className="text-sm text-green-700 flex items-center">
+                                <svg
+                                  className="w-4 h-4 mr-2"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                {isAlumni
+                                  ? "Alumni discount applied! Adults get FREE entry."
+                                  : "Recent passout discount applied! 1 adult pays ₹400, others pay ₹750."}
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+
+                    <div className="border-t border-gray-300 pt-3 mt-3">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 font-bold text-lg">
+                        <span>Total Amount:</span>
+                        <span className="text-teal-600 text-xl">
+                          ₹
+                          {(() => {
+                            const adultCount =
+                              watchedValues.attendees?.adults || 0;
+                            const childCount =
+                              watchedValues.attendees?.children || 0;
+
+                            const isAlumni =
+                              watchedValues.isAlumni &&
+                              watchedValues.graduationYear &&
+                              parseInt(watchedValues.graduationYear) >= 2020 &&
+                              parseInt(watchedValues.graduationYear) <= 2025;
+
+                            const isRecentPassout =
+                              watchedValues.yearOfPassing &&
+                              parseInt(watchedValues.yearOfPassing) >= 2020 &&
+                              parseInt(watchedValues.yearOfPassing) <= 2025;
+
+                            let total = 0;
+
+                            if (isAlumni) {
+                              // Alumni get free entry
+                              total += 0;
+                            } else if (isRecentPassout) {
+                              // Only 1 adult gets discounted price
+                              const discountedAdults = Math.min(adultCount, 1);
+                              const regularAdults = Math.max(adultCount - 1, 0);
+                              total +=
+                                discountedAdults * 400 + regularAdults * 750;
+                            } else {
+                              // Regular pricing
+                              total += adultCount * 750;
+                            }
+
+                            // Children and infants pricing
+                            total += childCount * 400;
+                            // Infants are free
+
+                            return total;
+                          })()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Contribution Amount (₹){" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <Controller
-                  name="contributionAmount"
-                  control={control}
-                  rules={{ required: "Contribution amount is required" }}
-                  render={({ field }) => (
-                    <input
-                      {...field}
-                      type="number"
-                      min={1}
-                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all ${
-                        errors.contributionAmount
-                          ? "border-red-300"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Enter contribution amount"
-                    />
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Contribution Amount (₹){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <Controller
+                    name="contributionAmount"
+                    control={control}
+                    rules={{ required: "Contribution amount is required" }}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        type="number"
+                        min={1}
+                        className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-base ${
+                          errors.contributionAmount
+                            ? "border-red-300"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="Enter contribution amount"
+                      />
+                    )}
+                  />
+                  {errors.contributionAmount && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.contributionAmount.message}
+                    </p>
                   )}
-                />
-                {errors.contributionAmount && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.contributionAmount.message}
+                  <p className="mt-2 text-sm text-gray-600">
+                    Suggested amount: ₹{watchedValues.proposedAmount || 0} (any
+                    amount accepted)
                   </p>
-                )}
-                <p className="mt-2 text-sm text-gray-600">
-                  Suggested amount: ₹{watchedValues.proposedAmount || 0} (any
-                  amount accepted)
-                </p>
-              </div>
+                </div>
 
-              <div className="bg-emerald-50 p-6 rounded-lg border border-emerald-200">
-                <h4 className="text-sm font-medium text-emerald-800 mb-3">
-                  What's Included in Your Contribution
-                </h4>
-                <ul className="text-sm text-emerald-700 space-y-2">
-                  <li>• Traditional Onam Sadya (feast)</li>
-                  <li>• Cultural program participation</li>
-                  <li>• Pookalam competition entry</li>
-                  <li>• Traditional games and activities</li>
-                  <li>• Souvenirs and certificates</li>
-                  <li>• Transportation (if needed)</li>
-                </ul>
-              </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Payment Transaction ID/Reference Number{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <Controller
+                    name="paymentTransactionId"
+                    control={control}
+                    rules={{ required: "Payment transaction ID is required" }}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        type="text"
+                        className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all text-base ${
+                          errors.paymentTransactionId
+                            ? "border-red-300"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="Enter your payment transaction ID or reference number"
+                      />
+                    )}
+                  />
+                  {errors.paymentTransactionId && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.paymentTransactionId.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-sm text-gray-600">
+                    Please provide the transaction ID from your payment
+                    confirmation
+                  </p>
+                </div>
+
+                <div className="bg-emerald-50 p-6 rounded-lg border border-emerald-200">
+                  <h4 className="text-sm font-medium text-emerald-800 mb-3">
+                    What's Included in Your Contribution
+                  </h4>
+                  <ul className="text-sm text-emerald-700 space-y-2">
+                    <li>• Traditional Onam Sadya (feast)</li>
+                    <li>• Cultural program participation</li>
+                    <li>• Pookalam competition entry</li>
+                    <li>• Traditional games and activities</li>
+                    <li>• Souvenirs and certificates</li>
+                  </ul>
+                </div>
+              </>
             </div>
           </motion.div>
 
@@ -1347,11 +1495,11 @@ const OnamRegistrationForm = () => {
           >
             <button
               type="submit"
-              disabled={isSubmitting || !emailVerified || !isValid}
-              className={`w-full py-4 px-6 text-lg font-semibold rounded-lg transition-all duration-200 ${
-                isSubmitting || !emailVerified || !isValid
+              disabled={isSubmitting || !isValid}
+              className={`w-full py-4 px-4 sm:px-6 text-base sm:text-lg font-semibold rounded-lg transition-all duration-200 touch-manipulation ${
+                isSubmitting || !isValid
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-xl"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-xl active:bg-emerald-800"
               }`}
             >
               {isSubmitting ? (
@@ -1374,16 +1522,10 @@ const OnamRegistrationForm = () => {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>Complete Onam Registration</span>
+                  <span>Complete Onavesham 2.0 Registration</span>
                 </div>
               )}
             </button>
-
-            {!emailVerified && (
-              <p className="mt-3 text-sm text-red-600 text-center">
-                Please complete email verification before submitting
-              </p>
-            )}
           </motion.div>
         </form>
 
@@ -1398,11 +1540,13 @@ const OnamRegistrationForm = () => {
             <div className="w-16 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 mx-auto mb-4"></div>
           </div>
           <p className="text-gray-600 text-sm max-w-2xl mx-auto leading-relaxed">
-            "Onam is not just a festival, it's a celebration of unity,
+            "Onavesham 2.0 is not just a festival, it's a celebration of unity,
             prosperity, and the spirit of giving. We look forward to celebrating
             this joyous occasion with you."
           </p>
-          <p className="text-emerald-600 font-medium mt-4">Happy Onam! 🎉</p>
+          <p className="text-emerald-600 font-medium mt-4">
+            Happy Onavesham 2.0! 🎉
+          </p>
 
           {/* Created by xyvin footer */}
           <div className="mt-8 pt-6 border-t border-gray-100">

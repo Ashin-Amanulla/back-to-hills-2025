@@ -55,7 +55,7 @@ jobs:
             pwd
             ls -la
 
-      # Step 6: Clean temporary deployment directory
+      # Step 6: Clean temporary deployment directory on Lightsail
       - name: Clean Temporary Directory on Lightsail
         uses: appleboy/ssh-action@master
         with:
@@ -68,17 +68,16 @@ jobs:
             mkdir -p ~/deploy-temp
             chmod 775 ~/deploy-temp
 
-      # Step 7: Copy files to Lightsail using rsync (fixed)
-      - name: Deploy to Lightsail using rsync
-        uses: burnett01/rsync-deployments@5.2.1
+      # Step 7: Copy files to Lightsail using SCP
+      - name: Deploy to Lightsail via SCP
+        uses: appleboy/scp-action@master
         with:
-          switches: -avzr --delete
-          path: ./frontend/unma-banglore/
-          remote_path: /home/ubuntu/deploy-temp/
-          remote_host: ${{ secrets.LIGHTSAIL_HOST }}
-          remote_user: ${{ secrets.LIGHTSAIL_USER }}
-          remote_key: ${{ secrets.LIGHTSAIL_KEY }}
-          rsh: "ssh -i ${{ secrets.LIGHTSAIL_KEY }} -o StrictHostKeyChecking=no"
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_KEY }}
+          port: 22
+          source: "./frontend/unma-banglore/*"
+          target: "/home/ubuntu/deploy-temp/"
 
       # Step 8: Deploy on Lightsail
       - name: Deploy on Lightsail

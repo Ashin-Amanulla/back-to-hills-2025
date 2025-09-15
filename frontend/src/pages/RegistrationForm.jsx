@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import Select from "react-select";
+import { createRegistration } from "../api/registration.api";
 
 const OnamRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,13 +23,12 @@ const OnamRegistrationForm = () => {
       name: "",
       email: "",
       whatsappNumber: "",
-      age: "",
+      
       gender: "",
       country: "IN",
       stateUT: "Kerala",
       district: "",
-      city: "",
-      pincode: "",
+     
       location: "",
       yearOfPassing: "",
       houseColor: "",
@@ -56,32 +56,9 @@ const OnamRegistrationForm = () => {
 
       // Additional Categories
       registrationTypes: [], // Array of selected registration types
-      sponsorshipDetails: {
-        enterpriseName: "",
-        sponsorshipLevel: "",
-        sponsorshipAmount: 0,
-        contactPerson: "",
-        phoneNumber: "",
-        email: "",
-      },
-      donationDetails: {
-        donationAmount: 0,
-        donationType: "",
-        anonymous: false,
-      },
-      volunteerDetails: {
-        volunteerRole: "",
-        availability: "",
-        skills: "",
-        experience: "",
-      },
-      passportDetails: {
-        passportNumber: "",
-        passportCountry: "",
-        studentId: "",
-        university: "",
-        graduationYear: "",
-      },
+   
+   
+  
 
       // Financial
       contributionAmount: 0,
@@ -146,30 +123,56 @@ const OnamRegistrationForm = () => {
   }, [
     watchedValues.isAttending,
     watchedValues.attendees,
-    watchedValues.isAlumni,
-    watchedValues.graduationYear,
+    watchedValues.attendees?.adults,
+    watchedValues.attendees?.children,
+    watchedValues.attendees?.infants,
     watchedValues.yearOfPassing,
-    watchedValues,
     setValue,
   ]);
 
-
-
   // Handle form submission
-  const onSubmit = async () => {
-    // OTP verification is optional - only show warning if not verified
-
+  const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      toast.success(
-        "🎉 Onavesham 2.0 Registration Successful! Welcome to the celebration!"
-      );
-      reset();
-    } catch {
-      toast.error("Registration failed. Please try again.");
+      // Prepare data for API
+      const registrationData = {
+        ...data,
+        // Ensure proper data types
+        yearOfPassing: data.yearOfPassing
+          ? parseInt(data.yearOfPassing)
+          : undefined,
+        contributionAmount: parseInt(data.contributionAmount) || 0,
+        proposedAmount: parseInt(data.proposedAmount) || 0,
+        attendees: {
+          adults: parseInt(data.attendees?.adults) || 0,
+          children: parseInt(data.attendees?.children) || 0,
+          infants: parseInt(data.attendees?.infants) || 0,
+        },
+        // Ensure arrays are properly formatted
+        registrationTypes: Array.isArray(data.registrationTypes)
+          ? data.registrationTypes
+          : [],
+        eventParticipation: Array.isArray(data.eventParticipation)
+          ? data.eventParticipation
+          : [],
+      };
+
+      const response = await createRegistration(registrationData);
+
+      const result = await response;
+
+      if (response.success === true) {
+        toast.success(
+          `🎉 Onavesham 2.0 Registration Successful! Registration ID: ${result.data.registrationId}`
+        );
+        reset();
+      } else {
+        toast.error(result.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -191,6 +194,9 @@ const OnamRegistrationForm = () => {
     "Wayanad",
     "Kannur",
     "Kasaragod",
+    "Mahe",
+    "Lakshadweep",
+    "Other",
   ];
 
   return (
@@ -445,7 +451,7 @@ const OnamRegistrationForm = () => {
               {watchedValues.stateUT === "Kerala" && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    District <span className="text-red-500">*</span>
+                    JNV District <span className="text-red-500">*</span>
                   </label>
                   <Controller
                     name="district"
@@ -1300,8 +1306,7 @@ const OnamRegistrationForm = () => {
                       <div className="flex flex-col sm:flex-row sm:justify-between gap-2 font-bold text-lg">
                         <span>Total Amount:</span>
                         <span className="text-teal-600 text-xl">
-                          ₹
-                          {watchedValues.proposedAmount || 0}
+                          ₹{watchedValues.proposedAmount || 0}
                         </span>
                       </div>
                     </div>

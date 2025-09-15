@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL||"http://localhost:5454/api/registrations";
+const API_URL = import.meta.env.VITE_API_URL||"https://api-onavesham2.unma.in/api";
 
 export const createRegistration = async (registrationData) => {
   const response = await axios.post(`${API_URL}/registrations`, registrationData);

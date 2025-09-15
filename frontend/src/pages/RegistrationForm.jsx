@@ -23,12 +23,12 @@ const OnamRegistrationForm = () => {
       name: "",
       email: "",
       whatsappNumber: "",
-      
+
       gender: "",
       country: "IN",
       stateUT: "Kerala",
       district: "",
-     
+
       location: "",
       yearOfPassing: "",
       houseColor: "",
@@ -56,9 +56,6 @@ const OnamRegistrationForm = () => {
 
       // Additional Categories
       registrationTypes: [], // Array of selected registration types
-   
-   
-  
 
       // Financial
       contributionAmount: 0,
@@ -506,7 +503,7 @@ const OnamRegistrationForm = () => {
                       <option value="blue">Blue</option>
                       <option value="green">Green</option>
                       <option value="yellow">Yellow</option>
-                      
+
                       <option value="not-sure">Not sure</option>
                     </select>
                   )}
@@ -1319,7 +1316,19 @@ const OnamRegistrationForm = () => {
                   <Controller
                     name="contributionAmount"
                     control={control}
-                    rules={{ required: "Contribution amount is required" }}
+                    rules={{
+                      required: "Contribution amount is required",
+                      validate: (value) => {
+                        const proposedAmount =
+                          watchedValues.proposedAmount || 0;
+                        if (value < proposedAmount) {
+                          return (
+                            "Minimum contribution amount is ₹" + proposedAmount
+                          );
+                        }
+                        return true;
+                      },
+                    }}
                     render={({ field }) => (
                       <input
                         {...field}
@@ -1348,7 +1357,7 @@ const OnamRegistrationForm = () => {
                       Total Amount: ₹{watchedValues.proposedAmount || 0}
                     </span>
                     <span className="block mt-1 text-xs text-gray-500">
-                      (You can modify this amount if needed)
+                      (You can increase this amount if want to pay more)
                     </span>
                   </p>
                 </div>

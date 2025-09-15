@@ -73,12 +73,13 @@ jobs:
       - name: Deploy to Lightsail using rsync
         uses: burnett01/rsync-deployments@5.2.1
         with:
-          switches: -avzr --delete
-          path: ./frontend/unma-banglore/ 
-          remote_path: ~/deploy-temp/
-          remote_host: ${{ secrets.LIGHTSAIL_HOST }}
-          remote_user: ${{ secrets.LIGHTSAIL_USER }}
-          remote_key: ${{ secrets.LIGHTSAIL_KEY }}
+         switches: -avzr --delete
+         path: ./frontend/unma-banglore/
+         remote_path: /home/ubuntu/deploy-temp/
+         remote_host: ${{ secrets.LIGHTSAIL_HOST }}
+         remote_user: ${{ secrets.LIGHTSAIL_USER }}
+         remote_key: ${{ secrets.LIGHTSAIL_KEY }}
+
 
       # Step 8: Deploy on Lightsail
       - name: Deploy on Lightsail

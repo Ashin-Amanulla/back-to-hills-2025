@@ -1,4 +1,4 @@
-name: Deploy family-tree-Backend to AWS Lightsail
+name: Deploy unma-banglore-backend to AWS Lightsail
 
 on:
   push:

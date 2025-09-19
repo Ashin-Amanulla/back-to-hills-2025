@@ -7,7 +7,25 @@ export const createRegistration = async (registrationData) => {
   return response.data;
 };
 
-export const getRegistrations = async () => {
-  const response = await axios.get(`${API_URL}/registrations?page=1&limit=10`);
+export const getRegistrations = async (params) => {
+  try{    
+    const response = await axios.get(`${API_URL}/registrations?${params}`);
+   
+    return response.data;
+  }catch(error){
+    console.error("Error fetching registrations", error);
+    throw new Error("Failed to fetch registrations");
+  }
+};
+
+export const getRegistrationStats = async () => {
+  const response = await axios.get(`${API_URL}/registrations/stats`);
   return response.data;
+};
+
+export const downloadRegistrations = async () => {
+  const response = await axios.get(`${API_URL}/registrations/download`,{
+    responseType: "blob",
+  });
+  return response;
 };

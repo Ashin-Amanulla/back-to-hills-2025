@@ -1,4 +1,5 @@
 const Registration = require("../models/Registration");
+const moment = require("moment-timezone");
 
 // @desc    Create new registration
 // @route   POST /api/registrations
@@ -102,6 +103,7 @@ const getRegistrations = async (req, res, next) => {
 
     // Get total count for pagination
     const total = await Registration.countDocuments(filter);
+    //time to IST
 
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
@@ -119,7 +121,13 @@ const getRegistrations = async (req, res, next) => {
         hasPrevPage,
         limit,
       },
-      data: registrations,
+      data: registrations.map((registration) => ({
+        ...registration.toObject(), // convert Mongoose doc to plain object
+        registrationDate: moment(registration.createdAt)
+          .tz("Asia/Kolkata")
+          .format("DD-MM-YYYY"),
+      })),
+   
     });
   } catch (error) {
     next(error);
@@ -446,6 +454,69 @@ const searchRegistration = async (req, res, next) => {
   }
 };
 
+// @desc    Download registrations as Excel
+// @route   GET /api/registrations/download
+// @access  Private (Admin)
+const downloadRegistrations = async (req, res, next) => {
+  try {
+    const XLSX = require("xlsx");
+
+    // Fetch all registrations
+    const registrations = await Registration.find().select("-__v -_id").lean();
+
+    // Transform data for Excel
+    const excelData = registrations.map((reg) => ({
+      "Registration ID": reg.registrationId,
+      Name: reg.name,
+      Email: reg.email,
+      "WhatsApp Number": reg.whatsappNumber,
+      Gender: reg.gender,
+      "State/UT": reg.stateUT,
+      District: reg.district,
+      "House Color": reg.houseColor,
+      "Year of Passing": reg.yearOfPassing,
+      "Registration Types": reg.registrationTypes.join(", "),
+      Adults: reg.attendees?.adults || 0,
+      Children: reg.attendees?.children || 0,
+      Infants: reg.attendees?.infants || 0,
+      "Total Attendees":
+        (reg.attendees?.adults || 0) +
+        (reg.attendees?.children || 0) +
+        (reg.attendees?.infants || 0),
+      "Contribution Amount": reg.contributionAmount,
+      "Payment Status": reg.paymentStatus,
+      "Transaction ID": reg.paymentTransactionId,
+      Verified: reg.verified ? "Yes" : "No",
+      "Registration Date": new Date(reg.createdAt).toLocaleDateString(),
+    }));
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+
+    // Generate buffer
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    // Set headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=registrations.xlsx"
+    );
+
+    // Send file
+    res.send(buffer);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createRegistration,
   getRegistrations,
@@ -456,4 +527,5 @@ module.exports = {
   verifyRegistration,
   updatePaymentStatus,
   searchRegistration,
+  downloadRegistrations,
 };

@@ -10,6 +10,7 @@ const {
   verifyRegistration,
   updatePaymentStatus,
   searchRegistration,
+  downloadRegistrations,
 } = require("../controllers/registrationController");
 const {
   validateRegistrationData,
@@ -18,11 +19,12 @@ const {
 } = require("../middlewares/validation");
 
 // Public routes
-router.post("/",  createRegistration);
+router.post("/", createRegistration);
 router.get("/search/:query", searchRegistration);
 
 // Admin routes (these would typically be protected with authentication middleware)
 router.get("/", validateQueryParams, getRegistrations);
+router.get("/download", downloadRegistrations);
 router.get("/stats/summary", getRegistrationStats);
 router.get("/:id", getRegistration);
 router.put("/:id", validateUpdateData, updateRegistration);

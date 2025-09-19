@@ -10,8 +10,8 @@ require("dotenv").config();
 const connectDB = require("./config/database");
 
 // Import routes
+const userRoutes = require("./routes/userRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
-
 // Import middleware
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -56,6 +56,7 @@ app.get("/health", (req, res) => {
 });
 
 // API routes
+app.use("/api/users", userRoutes);
 app.use("/api/registrations", registrationRoutes);
 
 // Root endpoint

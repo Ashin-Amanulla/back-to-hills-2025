@@ -1,5 +1,6 @@
 const Registration = require("../models/Registration");
 const moment = require("moment-timezone");
+const { sendSuccessEmail } = require("../utils/email");
 
 // @desc    Create new registration
 // @route   POST /api/registrations
@@ -40,7 +41,7 @@ const createRegistration = async (req, res, next) => {
 
     // Create registration
     const registration = await Registration.create(req.body);
-
+    await sendSuccessEmail(registration);
     res.status(201).json({
       success: true,
       message: "Registration created successfully",
@@ -453,6 +454,7 @@ const searchRegistration = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // @desc    Download registrations as Excel
 // @route   GET /api/registrations/download

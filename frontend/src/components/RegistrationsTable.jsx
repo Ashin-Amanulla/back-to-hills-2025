@@ -32,10 +32,10 @@ const RegistrationsTable = () => {
         ...(statusFilter && { status: statusFilter }),
         ...(paymentFilter && { paymentStatus: paymentFilter }),
       });
-  
+
       const response = await getRegistrations(params);
       const data = response;
-  
+
       if (data.success) {
         setRegistrations(data.data);
         setTotalPages(data.pagination.totalPages);
@@ -51,7 +51,6 @@ const RegistrationsTable = () => {
       setSearchLoading(false);
     }
   }, [currentPage, sortBy, sortOrder, searchTerm, statusFilter, paymentFilter]);
-  
 
   useEffect(() => {
     fetchRegistrations();

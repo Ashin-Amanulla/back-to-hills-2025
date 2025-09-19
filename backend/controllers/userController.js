@@ -39,20 +39,6 @@ const login = async (req, res) => {
 };
 
 
-//seed users
-const seedUsers = async () => {
-  const users = await User.find();
-  if (users.length === 0) {
-    //bcrypt password
-    const hashedPassword = await bcrypt.hash("UnMA@3421g", 10);
-    const user = await User.create({ username: "unma-banglore-admin", password: hashedPassword });
-    console.log("User seeded successfully", user);
-  } else {
-    console.log("Users already seeded");
-  }
-};
-
-seedUsers();
 
 module.exports = {
   login

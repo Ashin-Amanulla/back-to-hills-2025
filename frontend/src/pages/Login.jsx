@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useAuthStore from "../store/Auth";
 
 export default function Login() {
@@ -95,6 +95,10 @@ export default function Login() {
                 "Sign in"
               )}
             </button>
+            <p className="text-sm text-center">
+              <Link to="/registration"><button className="text-indigo-600 hover:text-indigo-700 underline">Registration Form
+                </button></Link>
+            </p>
           </div>
         </form>
       </div>

@@ -20,6 +20,8 @@ export default function App() {
         }
       >
         <Routes>
+        <Route path="/registration" element={<RegistrationForm />} />
+        <Route path="/" element={<Navigate to="/registration" replace />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/dashboard"
@@ -45,8 +47,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/registration" element={<RegistrationForm />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
+         
         </Routes>
       </Suspense>
       <ToastContainer

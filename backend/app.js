@@ -12,7 +12,7 @@ const connectDB = require("./config/database");
 // Import routes
 const userRoutes = require("./routes/userRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
-// Import middleware
+// Import middlewares
 const errorHandler = require("./middlewares/errorHandler");
 
 // Connect to database

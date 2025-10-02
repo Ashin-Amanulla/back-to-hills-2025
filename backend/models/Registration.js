@@ -30,6 +30,9 @@ const registrationSchema = new mongoose.Schema(
       type: String,
       required: [true, "State/UT is required"],
     },
+    otherStateUT: {
+      type: String,
+    },
     district: {
       type: String,
     },
@@ -49,6 +52,10 @@ const registrationSchema = new mongoose.Schema(
     },
     yearOfPassing: {
       type: Number,
+    },
+    isEmailSent:{
+      type: Boolean,
+      default: false,
     },
 
     // Registration Details

@@ -335,17 +335,13 @@ const createRegistrationSchema = Joi.object({
 // Update Registration Schema (all fields optional except _id)
 const updateRegistrationSchema = Joi.object({
   // Personal Details
-  name: personalDetailsSchema.name.optional(),
-  email: personalDetailsSchema.email.optional(),
-  whatsappNumber: personalDetailsSchema.whatsappNumber.optional(),
-  age: personalDetailsSchema.age,
-  gender: personalDetailsSchema.gender.optional(),
+  name: personalDetailsSchema.name,
+  email: personalDetailsSchema.email,
+  whatsappNumber: personalDetailsSchema.whatsappNumber,
+  gender: personalDetailsSchema.gender,
   country: personalDetailsSchema.country,
-  stateUT: personalDetailsSchema.stateUT.optional(),
+  stateUT: personalDetailsSchema.stateUT,
   district: personalDetailsSchema.district,
-  city: personalDetailsSchema.city,
-  pincode: personalDetailsSchema.pincode,
-  location: personalDetailsSchema.location,
   yearOfPassing: personalDetailsSchema.yearOfPassing,
   houseColor: personalDetailsSchema.houseColor.optional(),
 

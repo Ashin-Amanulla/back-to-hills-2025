@@ -104,7 +104,7 @@ const OnamRegistrationForm = () => {
         // Only 1 adult gets discounted price, rest pay regular price
         const discountedAdults = Math.min(adultCount, 1);
         const regularAdults = Math.max(adultCount - 1, 0);
-        totalExpense = discountedAdults * 400 + regularAdults * 750;
+        totalExpense = discountedAdults * 0 + regularAdults * 750;
       } else {
         // Regular pricing
         totalExpense = adultCount * 750;
@@ -428,10 +428,7 @@ const OnamRegistrationForm = () => {
                     >
                       <option value="">Select state/UT</option>
                       <option value="Kerala">Kerala</option>
-                      <option value="Tamil Nadu">Tamil Nadu</option>
-                      <option value="Karnataka">Karnataka</option>
-                      <option value="Maharashtra">Maharashtra</option>
-                      <option value="Delhi">Delhi</option>
+
                       <option value="Lakshadweep">Lakshadweep</option>
                       <option value="Mahe">Mahe</option>
                       <option value="Other">Other</option>
@@ -445,7 +442,31 @@ const OnamRegistrationForm = () => {
                 )}
               </div>
 
-              {watchedValues.stateUT === "Kerala" && (
+              {watchedValues.stateUT==="Other" && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Enter your state/UT <span className="text-red-500">*</span>
+                    </label>
+                    <Controller
+                      name="otherStateUT"
+                      control={control}
+                      rules={{ required: "State/UT is required" }}
+                      render={({ field }) => (
+                        <input
+                          {...field}
+                          type="text"
+                          className="w-full px-3 sm:px-4 py-3 border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all text-base"
+                        />
+                      )}
+                    />
+                    {errors.otherStateUT && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.otherStateUT.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     JNV District <span className="text-red-500">*</span>
@@ -478,7 +499,6 @@ const OnamRegistrationForm = () => {
                     </p>
                   )}
                 </div>
-              )}
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -517,7 +537,7 @@ const OnamRegistrationForm = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Location they are coming from
+                  Location you are coming from
                 </label>
                 <Controller
                   name="location"
@@ -747,7 +767,7 @@ const OnamRegistrationForm = () => {
                                 parseInt(watchedValues.yearOfPassing) <= 2025;
 
                               if (isRecentPassout)
-                                return "₹400 each (2020-2025 passout)";
+                                return "₹0 for 1 adult (2020-2025 passout)";
                               return "₹750 each";
                             })()}
                           </span>
@@ -1215,7 +1235,7 @@ const OnamRegistrationForm = () => {
                         discountedAdultCount = Math.min(adultCount, 1);
                         regularAdultCount = Math.max(adultCount - 1, 0);
                         adultLabel =
-                          "₹400 each (1 adult - 2020-2025 passout) + ₹750 each (others)";
+                          "₹0 each (1 adult - 2020-2025 passout) + ₹750 each (others)";
                       }
 
                       return (
@@ -1230,8 +1250,8 @@ const OnamRegistrationForm = () => {
                                     adult):
                                   </span>
                                   <span className="font-medium text-sm sm:text-base">
-                                    {discountedAdultCount} × ₹400 = ₹
-                                    {discountedAdultCount * 400}
+                                    {discountedAdultCount} × ₹0 = ₹
+                                    {discountedAdultCount * 0}
                                   </span>
                                 </div>
                               )}
@@ -1288,7 +1308,7 @@ const OnamRegistrationForm = () => {
                                   />
                                 </svg>
                                 {isRecentPassout
-                                  ? "Recent passout discount applied! 1 adult pays ₹400, others pay ₹750."
+                                  ? "Recent passout discount applied! 1 adult pays ₹0, others pay ₹750."
                                   : ""}
                               </p>
                             </div>
@@ -1452,6 +1472,184 @@ const OnamRegistrationForm = () => {
               )}
             </button>
           </motion.div>
+
+          {/* Form Validation Status */}
+          {(!isValid || Object.keys(errors).length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.35 }}
+              className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4 sm:p-6"
+            >
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="w-5 h-5 text-amber-600 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-amber-800 mb-3">
+                    Please complete the following to submit your registration:
+                  </h3>
+
+                  {/* Missing Required Fields */}
+                  {(() => {
+                    const requiredFields = [
+                      { name: "name", label: "Full Name" },
+                      { name: "email", label: "Email Address" },
+                      { name: "whatsappNumber", label: "Mobile Number" },
+                      { name: "gender", label: "Gender" },
+                      { name: "stateUT", label: "State/UT" },
+                      { name: "district", label: "JNV District" },
+                      {
+                        name: "houseColor",
+                        label: "House Color for Pookkalam",
+                      },
+                      {
+                        name: "registrationTypes",
+                        label: "Registration Category",
+                      },
+                      {
+                        name: "contributionAmount",
+                        label: "Contribution Amount",
+                      },
+                      {
+                        name: "paymentTransactionId",
+                        label: "Payment Transaction ID",
+                      },
+                    ];
+
+                    const missingFields = requiredFields.filter((field) => {
+                      const value = watchedValues[field.name];
+                      return (
+                        !value || (Array.isArray(value) && value.length === 0)
+                      );
+                    });
+
+                 
+                    // Add other state/UT if other is selected
+                    if (watchedValues.stateUT === "Other" && !watchedValues.otherStateUT) {
+                      missingFields.push({
+                        name: "otherStateUT",
+                        label: "Other State/UT",
+                      });
+                    }
+
+                    if (missingFields.length > 0) {
+                      return (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-amber-700 mb-2">
+                            Missing Required Fields:
+                          </h4>
+                          <ul className="text-sm text-amber-700 space-y-1">
+                            {missingFields.map((field) => (
+                              <li
+                                key={field.name}
+                                className="flex items-center space-x-2"
+                              >
+                                <svg
+                                  className="w-4 h-4 text-amber-600 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                                <span>{field.label}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Display Validation Errors */}
+                  {Object.keys(errors).length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-amber-700 mb-2">
+                        Validation Errors:
+                      </h4>
+                      <ul className="text-sm text-amber-700 space-y-1">
+                        {Object.entries(errors).map(([fieldName, error]) => (
+                          <li
+                            key={fieldName}
+                            className="flex items-start space-x-2"
+                          >
+                            <svg
+                              className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            <span>
+                              <strong>
+                                {fieldName
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/^./, (str) => str.toUpperCase())}
+                                :
+                              </strong>{" "}
+                              {error.message}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Form Status Summary */}
+                  <div className="bg-white bg-opacity-50 p-3 rounded-lg">
+                    <div className="flex items-center space-x-2 text-sm">
+                      <svg
+                        className="w-4 h-4 text-amber-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span className="text-amber-800 font-medium">
+                        Form Status:{" "}
+                        {isValid ? "Ready to submit" : "Incomplete"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Complete all required fields above to enable the submit
+                      button.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </form>
 
         {/* Professional Footer */}

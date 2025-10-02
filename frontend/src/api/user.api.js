@@ -1,14 +1,11 @@
-import axios from "axios";
-
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api-onavesham2.unma.in/api";
+import axiosInstance from "./axios";
 
 export const login = async (username, password) => {
   if (!username || !password) {
     throw new Error("Username and password are required");
   }
   try {
-    const response = await axios.post(`${API_URL}/users/login`, {
+    const response = await axiosInstance.post("/users/login", {
       username,
       password,
     });

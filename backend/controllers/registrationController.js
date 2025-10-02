@@ -41,7 +41,13 @@ const createRegistration = async (req, res, next) => {
 
     // Create registration
     const registration = await Registration.create(req.body);
-    await sendSuccessEmail(registration);
+  let   emailResponse = await sendSuccessEmail(registration);
+  if(emailResponse.error){
+    registration.isEmailSent = false;
+  }else{
+    registration.isEmailSent = true;
+  }
+  await registration.save();
     res.status(201).json({
       success: true,
       message: "Registration created successfully",
@@ -519,6 +525,33 @@ const downloadRegistrations = async (req, res, next) => {
   }
 };
 
+//sent confirmation email to isEmailSent is false
+const sendConfirmationEmail = async (req, res, next) => {
+  try {
+    console.log("Sending confirmation emails");
+    const registrations = await Registration.find({isEmailSent: false});
+    console.log(`${registrations.length} registrations found`);
+    for (const registration of registrations) {
+      await sendSuccessEmail(registration);
+      registration.isEmailSent = true;
+      await registration.save();
+      console.log(`${registration.name} email sent`);
+    }
+    res.json({
+      success: true,
+      message: "Confirmation emails sent successfully",
+    });
+  } catch (error) {
+    console.error("Error sending confirmation emails:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error sending confirmation emails",
+    });
+  }
+};
+
+
+
 module.exports = {
   createRegistration,
   getRegistrations,
@@ -530,4 +563,5 @@ module.exports = {
   updatePaymentStatus,
   searchRegistration,
   downloadRegistrations,
+  sendConfirmationEmail,
 };

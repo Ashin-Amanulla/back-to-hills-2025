@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
 import { getRegistrations } from "../api/registration.api";
+import EditRegistrationModal from "./EditRegistrationModal";
 
 const RegistrationsTable = () => {
   const [registrations, setRegistrations] = useState([]);
@@ -16,6 +17,8 @@ const RegistrationsTable = () => {
   const [totalRegistrations, setTotalRegistrations] = useState(0);
   const [sortBy, setSortBy] = useState("registrationDate");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedRegistration, setSelectedRegistration] = useState(null);
 
   const itemsPerPage = 10;
 
@@ -54,7 +57,7 @@ const RegistrationsTable = () => {
 
   useEffect(() => {
     fetchRegistrations();
-  }, [currentPage, sortBy, sortOrder, searchTerm, statusFilter, paymentFilter]);
+  }, [fetchRegistrations]);
 
   // Create debounced search function
   const debouncedSearch = useMemo(
@@ -93,23 +96,25 @@ const RegistrationsTable = () => {
     }
   };
 
-  // Get status badge color
-  const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "failed":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
+  // Handle edit button click
+  const handleEditClick = (registration) => {
+    setSelectedRegistration(registration);
+    setIsEditModalOpen(true);
   };
 
-  // Get verification badge color
-  const getVerificationBadgeColor = (verified) => {
-    return verified ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsEditModalOpen(false);
+    setSelectedRegistration(null);
+  };
+
+  // Handle registration update
+  const handleRegistrationUpdate = (updatedRegistration) => {
+    setRegistrations((prevRegistrations) =>
+      prevRegistrations.map((reg) =>
+        reg._id === updatedRegistration._id ? updatedRegistration : reg
+      )
+    );
   };
 
   if (loading) {
@@ -242,6 +247,9 @@ const RegistrationsTable = () => {
                       )}
                     </div>
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -292,6 +300,27 @@ const RegistrationsTable = () => {
 
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {registration.registrationDate}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => handleEditClick(registration)}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                      >
+                        <svg
+                          className="w-4 h-4 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -376,6 +405,14 @@ const RegistrationsTable = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Registration Modal */}
+      <EditRegistrationModal
+        isOpen={isEditModalOpen}
+        onClose={handleModalClose}
+        registration={selectedRegistration}
+        onUpdate={handleRegistrationUpdate}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const jwtSecret = process.env.JWT_SECRET||"supersecretkey";
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -21,7 +21,7 @@ const login = async (req, res) => {
         message: "Invalid username or password",
       });
     }
-    const token = jwt.sign({ id: user._id }, "asd#@#@Das", {
+    const token = jwt.sign({ id: user._id }, jwtSecret, {
       expiresIn: 5 * 60 * 1000,
     });
     res.status(200).json({

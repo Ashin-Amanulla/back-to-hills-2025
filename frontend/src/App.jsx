@@ -47,6 +47,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route path="*" element={<Navigate to="/registration" replace />} />
          
         </Routes>
       </Suspense>

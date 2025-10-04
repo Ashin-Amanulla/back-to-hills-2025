@@ -2,7 +2,7 @@ import axios from "axios";
 import axiosInstance from "./axios";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://api-onavesham2.unma.in/api";
+  import.meta.env.VITE_API_URL || "https://api-backtohills4.unma.in/api";
 
 export const createRegistration = async (registrationData) => {
   const response = await axios.post(
@@ -45,5 +45,10 @@ export const updateRegistration = async (id, registrationData) => {
 
 export const getRegistration = async (id) => {
   const response = await axiosInstance.get(`/registrations/${id}`);
+  return response.data;
+};
+
+export const searchRegistration = async (query) => {
+  const response = await axios.get(`${API_URL}/registrations/search/${query}`);
   return response.data;
 };

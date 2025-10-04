@@ -1,7 +1,7 @@
 {
-  "name": "onam-registration-backend",
+  "name": "back-to-hills-registration-backend",
   "version": "1.0.0",
-  "description": "Backend API for Onam Registration Form - UNMA Bangalore Chapter",
+  "description": "Backend API for Back to Hills 4.0 Alumni Meet Registration",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,13 +10,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "onam",
+    "alumni",
     "registration",
     "api",
     "express",
-    "mongodb"
+    "mongodb",
+    "school-alumni"
   ],
-  "author": "UNMA Bangalore Chapter",
+  "author": "School Alumni Association",
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^6.0.0",

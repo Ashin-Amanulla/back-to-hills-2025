@@ -9,10 +9,7 @@ const createRegistration = async (req, res, next) => {
   try {
     // Check if email or mobile already exists
     const existingRegistration = await Registration.findOne({
-      $or: [
-        { email: req.body.email },
-        { whatsappNumber: req.body.whatsappNumber },
-      ],
+      $or: [{ email: req.body.email }, { mobile: req.body.mobile }],
     });
 
     if (existingRegistration) {
@@ -21,8 +18,8 @@ const createRegistration = async (req, res, next) => {
         message: "Registration already exists with this email or mobile number",
         existingRegistration: {
           email: existingRegistration.email,
-          whatsappNumber: existingRegistration.whatsappNumber,
-          registrationDate: existingRegistration.registrationDate,
+          mobile: existingRegistration.mobile,
+          registrationDate: existingRegistration.createdAt,
         },
       });
     }
@@ -41,13 +38,13 @@ const createRegistration = async (req, res, next) => {
 
     // Create registration
     const registration = await Registration.create(req.body);
-  let   emailResponse = await sendSuccessEmail(registration);
-  if(emailResponse.error){
-    registration.isEmailSent = false;
-  }else{
-    registration.isEmailSent = true;
-  }
-  await registration.save();
+    let emailResponse = await sendSuccessEmail(registration);
+    if (emailResponse.error) {
+      registration.isEmailSent = false;
+    } else {
+      registration.isEmailSent = true;
+    }
+    await registration.save();
     res.status(201).json({
       success: true,
       message: "Registration created successfully",
@@ -75,26 +72,27 @@ const getRegistrations = async (req, res, next) => {
     const {
       page = 1,
       limit = 10,
-      sortBy = "registrationDate",
+      sortBy = "createdAt",
       sortOrder = "desc",
-      status,
       paymentStatus,
       verified,
+      batch,
       search,
     } = req.query;
 
     // Build filter object
     const filter = {};
 
-    if (status) filter.status = status;
     if (paymentStatus) filter.paymentStatus = paymentStatus;
     if (verified !== undefined) filter.verified = verified === "true";
+    if (batch) filter.batch = batch;
 
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
-        { whatsappNumber: { $regex: search, $options: "i" } },
+        { mobile: { $regex: search, $options: "i" } },
+        { batch: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -134,7 +132,6 @@ const getRegistrations = async (req, res, next) => {
           .tz("Asia/Kolkata")
           .format("DD-MM-YYYY"),
       })),
-   
     });
   } catch (error) {
     next(error);
@@ -179,14 +176,12 @@ const updateRegistration = async (req, res, next) => {
     }
 
     // Check for duplicate email/mobile if being updated
-    if (req.body.email || req.body.whatsappNumber) {
+    if (req.body.email || req.body.mobile) {
       const existingRegistration = await Registration.findOne({
         _id: { $ne: req.params.id },
         $or: [
           ...(req.body.email ? [{ email: req.body.email }] : []),
-          ...(req.body.whatsappNumber
-            ? [{ whatsappNumber: req.body.whatsappNumber }]
-            : []),
+          ...(req.body.mobile ? [{ mobile: req.body.mobile }] : []),
         ],
       });
 
@@ -266,43 +261,46 @@ const getRegistrationStats = async (req, res, next) => {
   try {
     const stats = await Registration.getStatistics();
 
-    // Additional statistics
-    const registrationTypesStats = await Registration.aggregate([
-      {
-        $unwind: "$registrationTypes",
-      },
+    // Additional statistics for Back to Hills 4.0
+    const batchStats = await Registration.aggregate([
       {
         $group: {
-          _id: "$registrationTypes",
+          _id: "$batch",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const foodChoiceStats = await Registration.aggregate([
+      {
+        $group: {
+          _id: "$foodChoice",
           count: { $sum: 1 },
         },
       },
     ]);
 
-    const houseColorStats = await Registration.aggregate([
+    const arrivalTimeStats = await Registration.aggregate([
       {
         $group: {
-          _id: "$houseColor",
+          _id: "$expectedArrivalTime",
           count: { $sum: 1 },
         },
+      },
+      {
+        $sort: { _id: 1 },
       },
     ]);
 
-    const districtStats = await Registration.aggregate([
-      {
-        $match: { district: { $exists: true, $ne: "" } },
-      },
+    const accommodationStats = await Registration.aggregate([
       {
         $group: {
-          _id: "$district",
+          _id: "$overnightAccommodation",
           count: { $sum: 1 },
         },
-      },
-      {
-        $sort: { count: -1 },
-      },
-      {
-        $limit: 10,
       },
     ]);
 
@@ -310,9 +308,10 @@ const getRegistrationStats = async (req, res, next) => {
       success: true,
       data: {
         ...stats,
-        registrationTypes: registrationTypesStats,
-        houseColors: houseColorStats,
-        topDistricts: districtStats,
+        batchDistribution: batchStats,
+        foodChoices: foodChoiceStats,
+        arrivalTimes: arrivalTimeStats,
+        accommodationPreferences: accommodationStats,
       },
     });
   } catch (error) {
@@ -446,21 +445,22 @@ const searchRegistration = async (req, res, next) => {
         registrationId: registration.registrationId,
         name: registration.name,
         email: registration.email,
-        whatsappNumber: registration.whatsappNumber,
+        mobile: registration.mobile,
+        batch: registration.batch,
         totalAttendees: registration.totalAttendees,
         contributionAmount: registration.contributionAmount,
         paymentStatus: registration.paymentStatus,
         verified: registration.verified,
-        registrationDate: registration.registrationDate,
-        houseColor: registration.houseColor,
-        district: registration.district,
+        registrationDate: registration.createdAt,
+        foodChoice: registration.foodChoice,
+        expectedArrivalTime: registration.expectedArrivalTime,
+        overnightAccommodation: registration.overnightAccommodation,
       },
     });
   } catch (error) {
     next(error);
   }
 };
-
 
 // @desc    Download registrations as Excel
 // @route   GET /api/registrations/download
@@ -477,13 +477,12 @@ const downloadRegistrations = async (req, res, next) => {
       "Registration ID": reg.registrationId,
       Name: reg.name,
       Email: reg.email,
-      "WhatsApp Number": reg.whatsappNumber,
+      "Mobile Number": reg.mobile,
       Gender: reg.gender,
-      "State/UT": reg.stateUT,
-      District: reg.district,
-      "House Color": reg.houseColor,
-      "Year of Passing": reg.yearOfPassing,
-      "Registration Types": reg.registrationTypes.join(", "),
+      Batch: reg.batch,
+      "Food Choice": reg.foodChoice,
+      "Expected Arrival Time": reg.expectedArrivalTime,
+      "Overnight Accommodation": reg.overnightAccommodation,
       Adults: reg.attendees?.adults || 0,
       Children: reg.attendees?.children || 0,
       Infants: reg.attendees?.infants || 0,
@@ -491,6 +490,7 @@ const downloadRegistrations = async (req, res, next) => {
         (reg.attendees?.adults || 0) +
         (reg.attendees?.children || 0) +
         (reg.attendees?.infants || 0),
+      "Guest Count": reg.guests?.length || 0,
       "Contribution Amount": reg.contributionAmount,
       "Payment Status": reg.paymentStatus,
       "Transaction ID": reg.paymentTransactionId,
@@ -529,7 +529,7 @@ const downloadRegistrations = async (req, res, next) => {
 const sendConfirmationEmail = async (req, res, next) => {
   try {
     console.log("Sending confirmation emails");
-    const registrations = await Registration.find({isEmailSent: false});
+    const registrations = await Registration.find({ isEmailSent: false });
     console.log(`${registrations.length} registrations found`);
     for (const registration of registrations) {
       await sendSuccessEmail(registration);
@@ -549,8 +549,6 @@ const sendConfirmationEmail = async (req, res, next) => {
     });
   }
 };
-
-
 
 module.exports = {
   createRegistration,

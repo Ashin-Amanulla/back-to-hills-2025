@@ -1,21 +1,22 @@
-# Onam Celebration Registration Form
+# Back to Hills 4.0 Alumni Registration Form
 
-A beautiful, responsive registration form for Onam celebrations built with React, Tailwind CSS, and Framer Motion.
+A beautiful, responsive registration form for Back to Hills 4.0 alumni meet built with React, Tailwind CSS, and Framer Motion.
 
 ## Features
 
-### 🎨 **Onam-Themed Design**
+### 🎨 **Alumni-Themed Design**
 
-- Beautiful gradient background with Kerala colors (green, yellow, orange)
-- Pookalam-inspired decorative elements
-- Traditional Onam color scheme throughout the form
+- Beautiful gradient background with school colors (blue, green)
+- Modern, clean design with alumni-focused elements
+- Professional color scheme throughout the form
 
 ### 📝 **Comprehensive Registration Fields**
 
-- **Personal Details**: Name, email, contact numbers, age, gender, location
-- **Event Preferences**: Attendance confirmation, attendee counters, dietary restrictions
-- **Onam-Specific Options**: Traditional dress, cultural programs, Pookalam competition
-- **Payment Details**: Contribution amount calculation, payment information
+- **Personal Details**: Name, email, mobile number, gender, batch
+- **Event Preferences**: Food choice, expected arrival time, overnight accommodation
+- **Attendee Management**: Adult, children, and infant counters with dynamic pricing
+- **Guest Information**: Add multiple guests with their details
+- **Payment Details**: Dynamic fee calculation based on batch and attendees
 
 ### 🚀 **Interactive Features**
 

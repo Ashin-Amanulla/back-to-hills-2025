@@ -24,12 +24,9 @@ const app = express();
 app.use(helmet());
 
 // CORS configuration
-app.use(
-  cors()
-);
+app.use(cors());
 
 // Rate limiting
-
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
@@ -40,14 +37,13 @@ app.use(compression());
 
 // Logging middleware
 
-  app.use(morgan("dev"));
-
+app.use(morgan("dev"));
 
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
     success: true,
-    message: "Onam Registration API is running",
+    message: "Back to Hills 4.0 Alumni Registration API is running",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
   });

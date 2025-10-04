@@ -1,12 +1,12 @@
 const Joi = require("joi");
 
-// Personal Details Validation
+// Personal Details Validation for Back to Hills 4.0
 const personalDetailsSchema = {
   name: Joi.string().trim().min(2).max(100).required().messages({
-    "string.empty": "Name is required",
+    "string.empty": "Full name is required",
     "string.min": "Name must be at least 2 characters long",
     "string.max": "Name cannot exceed 100 characters",
-    "any.required": "Name is required",
+    "any.required": "Full name is required",
   }),
 
   email: Joi.string().email().lowercase().required().messages({
@@ -15,7 +15,7 @@ const personalDetailsSchema = {
     "any.required": "Email is required",
   }),
 
-  whatsappNumber: Joi.string()
+  mobile: Joi.string()
     .pattern(/^[6-9]\d{9}$/)
     .required()
     .messages({
@@ -25,97 +25,79 @@ const personalDetailsSchema = {
       "any.required": "Mobile number is required",
     }),
 
-  age: Joi.number().integer().min(1).max(120).optional().messages({
-    "number.min": "Age must be at least 1",
-    "number.max": "Age cannot exceed 120",
-    "number.base": "Age must be a valid number",
+  gender: Joi.string().valid("Male", "Female", "Other").required().messages({
+    "any.only": "Gender must be one of: Male, Female, Other",
+    "string.empty": "Gender is required",
+    "any.required": "Gender is required",
   }),
 
-  gender: Joi.string()
-    .valid("male", "female", "other", "prefer-not-to-say")
-    .required()
-    .messages({
-      "any.only":
-        "Gender must be one of: male, female, other, prefer-not-to-say",
-      "string.empty": "Gender is required",
-      "any.required": "Gender is required",
-    }),
-
-  country: Joi.string().default("IN"),
-
-  stateUT: Joi.string().required().messages({
-    "string.empty": "State/UT is required",
-    "any.required": "State/UT is required",
-  }),
-
-  district: Joi.string()
-    .when("stateUT", {
-      is: "Kerala",
-      then: Joi.required(),
-      otherwise: Joi.optional(),
-    })
-    .messages({
-      "any.required": "District is required when State/UT is Kerala",
-    }),
-
-  city: Joi.string().trim().max(100).optional(),
-
-  pincode: Joi.string()
-    .pattern(/^\d{6}$/)
-    .optional()
-    .messages({
-      "string.pattern.base": "Please enter a valid 6-digit pincode",
-    }),
-
-  location: Joi.string().trim().max(200).optional(),
-
-  yearOfPassing: Joi.number()
-    .integer()
-    .min(1990)
-    .max(new Date().getFullYear() + 1)
-    .optional()
-    .messages({
-      "number.min": "Year of passing cannot be before 1990",
-      "number.max": "Year of passing cannot be in the future",
-      "number.base": "Year of passing must be a valid number",
-    }),
-
-  houseColor: Joi.string()
+  batch: Joi.string()
     .valid(
-      "red",
-      "blue",
-      "green",
-      "yellow",
-      "orange",
-      "purple",
-      "pink",
-      "not-sure"
+      "Batch 1",
+      "Batch 2",
+      "Batch 3",
+      "Batch 4",
+      "Batch 5",
+      "Batch 6",
+      "Batch 7",
+      "Batch 8",
+      "Batch 9",
+      "Batch 10",
+      "Batch 11",
+      "Batch 12",
+      "Batch 13",
+      "Batch 14",
+      "Batch 15",
+      "Batch 16",
+      "Batch 17",
+      "Batch 18",
+      "Batch 19",
+      "Batch 20",
+      "Batch 21",
+      "Batch 22",
+      "Batch 23",
+      "Batch 24",
+      "Batch 25",
+      "Batch 26",
+      "Batch 27",
+      "Batch 28",
+      "Batch 29",
+      "Batch 30",
+      "Batch 31",
+      "Batch 32"
     )
     .required()
     .messages({
-      "any.only": "House color must be one of the available options",
-      "string.empty": "House color is required",
-      "any.required": "House color is required",
+      "any.only": "Please select a valid batch (Batch 1 - Batch 32)",
+      "string.empty": "Batch is required",
+      "any.required": "Batch is required",
     }),
 };
 
-// Registration Types Validation
-const registrationTypesSchema = Joi.array()
-  .items(
-    Joi.string().valid(
-      "attendee",
-      "sponsor",
-      "donor",
-      "volunteer",
-      "passout-student"
-    )
-  )
-  .min(1)
-  .required()
-  .messages({
-    "array.min": "Please select at least one registration category",
-    "any.required": "Registration types are required",
-  });
+// Event Preferences Validation
+const eventPreferencesSchema = {
+  foodChoice: Joi.string().valid("Veg", "Non-Veg").required().messages({
+    "any.only": "Food choice must be either Veg or Non-Veg",
+    "string.empty": "Food choice is required",
+    "any.required": "Food choice is required",
+  }),
+
+  expectedArrivalTime: Joi.string()
+    .valid("8-11", "11-14", "14-17", "17-20")
+    .required()
+    .messages({
+      "any.only":
+        "Expected arrival time must be one of: 8-11, 11-14, 14-17, 17-20",
+      "string.empty": "Expected arrival time is required",
+      "any.required": "Expected arrival time is required",
+    }),
+
+  overnightAccommodation: Joi.string().valid("Yes", "No").required().messages({
+    "any.only": "Overnight accommodation must be Yes or No",
+    "string.empty": "Overnight accommodation preference is required",
+    "any.required": "Overnight accommodation preference is required",
+  }),
+};
 
 // Attendees Validation
 const attendeesSchema = Joi.object({
@@ -135,155 +117,39 @@ const attendeesSchema = Joi.object({
   }),
 });
 
-// Event Preferences Validation
-const eventPreferencesSchema = {
-  isAttending: Joi.boolean().default(true),
-
-  attendees: attendeesSchema.required(),
-
-  eventParticipation: Joi.array()
-    .items(Joi.string().valid("pookalam", "cultural", "games", "volunteer"))
-    .optional(),
-
-  participationDetails: Joi.string().max(500).optional().messages({
-    "string.max": "Participation details cannot exceed 500 characters",
+// Guest Information Validation
+const guestSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(100).required().messages({
+    "string.empty": "Guest name is required",
+    "string.min": "Guest name must be at least 2 characters long",
+    "string.max": "Guest name cannot exceed 100 characters",
+    "any.required": "Guest name is required",
   }),
 
-  traditionalDress: Joi.boolean().default(false),
+  gender: Joi.string().valid("Male", "Female", "Other").required().messages({
+    "any.only": "Guest gender must be one of: Male, Female, Other",
+    "string.empty": "Guest gender is required",
+    "any.required": "Guest gender is required",
+  }),
 
-  culturalProgram: Joi.boolean().default(false),
+  foodChoice: Joi.string().valid("Veg", "Non-Veg").required().messages({
+    "any.only": "Guest food choice must be either Veg or Non-Veg",
+    "string.empty": "Guest food choice is required",
+    "any.required": "Guest food choice is required",
+  }),
 
-  programType: Joi.string()
-    .valid(
-      "classical-dance",
-      "folk-dance",
-      "music",
-      "poetry",
-      "skit",
-      "other",
-      ""
-    )
-    .when("culturalProgram", {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional(),
-    })
+  ageCategory: Joi.string()
+    .valid("Adult", "Child", "Infant")
+    .required()
     .messages({
-      "any.required":
-        "Program type is required when cultural program is selected",
+      "any.only": "Guest age category must be one of: Adult, Child, Infant",
+      "string.empty": "Guest age category is required",
+      "any.required": "Guest age category is required",
     }),
-
-  flowerArrangement: Joi.boolean().default(false),
-
-  pookalamSize: Joi.string()
-    .valid("small", "medium", "large", "extra-large", "")
-    .when("flowerArrangement", {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional(),
-    })
-    .messages({
-      "any.required":
-        "Pookalam size is required when flower arrangement is selected",
-    }),
-};
-
-// Sponsorship Details Validation
-const sponsorshipDetailsSchema = Joi.object({
-  enterpriseName: Joi.string().trim().max(100).optional().messages({
-    "string.max": "Enterprise name cannot exceed 100 characters",
-  }),
-
-  sponsorshipLevel: Joi.string()
-    .valid("bronze", "silver", "gold", "platinum", "")
-    .optional(),
-
-  sponsorshipAmount: Joi.number().min(0).optional().messages({
-    "number.min": "Sponsorship amount cannot be negative",
-    "number.base": "Sponsorship amount must be a valid number",
-  }),
-
-  contactPerson: Joi.string().trim().max(100).optional().messages({
-    "string.max": "Contact person name cannot exceed 100 characters",
-  }),
-
-  phoneNumber: Joi.string()
-    .pattern(/^[6-9]\d{9}$/)
-    .optional()
-    .messages({
-      "string.pattern.base": "Please enter a valid 10-digit phone number",
-    }),
-
-  email: Joi.string().email().lowercase().optional().messages({
-    "string.email": "Please enter a valid email address",
-  }),
 });
 
-// Donation Details Validation
-const donationDetailsSchema = Joi.object({
-  donationAmount: Joi.number().min(0).optional().messages({
-    "number.min": "Donation amount cannot be negative",
-    "number.base": "Donation amount must be a valid number",
-  }),
-
-  donationType: Joi.string().valid("cash", "kind", "services", "").optional(),
-
-  anonymous: Joi.boolean().default(false),
-});
-
-// Volunteer Details Validation
-const volunteerDetailsSchema = Joi.object({
-  volunteerRole: Joi.string()
-    .valid(
-      "coordination",
-      "food",
-      "decoration",
-      "security",
-      "photography",
-      "other",
-      ""
-    )
-    .optional(),
-
-  availability: Joi.string()
-    .valid("morning", "afternoon", "full-day", "")
-    .optional(),
-
-  skills: Joi.string().max(200).optional().messages({
-    "string.max": "Skills description cannot exceed 200 characters",
-  }),
-
-  experience: Joi.string()
-    .valid("beginner", "intermediate", "experienced", "")
-    .optional(),
-});
-
-// Passport Details Validation
-const passportDetailsSchema = Joi.object({
-  passportNumber: Joi.string().trim().max(50).optional().messages({
-    "string.max": "Passport number cannot exceed 50 characters",
-  }),
-
-  passportCountry: Joi.string().trim().max(100).optional(),
-
-  studentId: Joi.string().trim().max(50).optional().messages({
-    "string.max": "Student ID cannot exceed 50 characters",
-  }),
-
-  university: Joi.string().trim().max(100).optional().messages({
-    "string.max": "University name cannot exceed 100 characters",
-  }),
-
-  graduationYear: Joi.number()
-    .integer()
-    .min(1990)
-    .max(new Date().getFullYear() + 1)
-    .optional()
-    .messages({
-      "number.min": "Graduation year cannot be before 1990",
-      "number.max": "Graduation year cannot be in the future",
-      "number.base": "Graduation year must be a valid number",
-    }),
+const guestsSchema = Joi.array().items(guestSchema).optional().messages({
+  "array.base": "Guests must be an array",
 });
 
 // Payment Validation
@@ -294,100 +160,59 @@ const paymentSchema = {
     "any.required": "Contribution amount is required",
   }),
 
-  proposedAmount: Joi.number().min(0).required().messages({
-    "number.min": "Proposed amount cannot be negative",
-    "number.base": "Proposed amount must be a valid number",
-    "any.required": "Proposed amount is required",
-  }),
-
   paymentTransactionId: Joi.string().trim().required().messages({
     "string.empty": "Payment transaction ID is required",
     "any.required": "Payment transaction ID is required",
   }),
 };
 
-// Main Registration Validation Schema
+// Main Registration Validation Schema for Back to Hills 4.0
 const createRegistrationSchema = Joi.object({
   // Personal Details
   ...personalDetailsSchema,
 
-  // Registration Types
-  registrationTypes: registrationTypesSchema,
-
   // Event Preferences
   ...eventPreferencesSchema,
 
-  // Additional Categories
-  sponsorshipDetails: sponsorshipDetailsSchema.default({}),
-  donationDetails: donationDetailsSchema.default({}),
-  volunteerDetails: volunteerDetailsSchema.default({}),
-  passportDetails: passportDetailsSchema.default({}),
+  // Attendees
+  attendees: attendeesSchema.required(),
+
+  // Guest Information
+  guests: guestsSchema,
 
   // Payment Information
   ...paymentSchema,
-
-  // Optional Fields
-  notes: Joi.string().max(500).optional().messages({
-    "string.max": "Notes cannot exceed 500 characters",
-  }),
 });
 
 // Update Registration Schema (all fields optional except _id)
 const updateRegistrationSchema = Joi.object({
   // Personal Details
-  name: personalDetailsSchema.name,
-  email: personalDetailsSchema.email,
-  whatsappNumber: personalDetailsSchema.whatsappNumber,
-  gender: personalDetailsSchema.gender,
-  country: personalDetailsSchema.country,
-  stateUT: personalDetailsSchema.stateUT,
-  district: personalDetailsSchema.district,
-  yearOfPassing: personalDetailsSchema.yearOfPassing,
-  houseColor: personalDetailsSchema.houseColor.optional(),
-
-  // Registration Types
-  registrationTypes: Joi.array()
-    .items(
-      Joi.string().valid(
-        "attendee",
-        "sponsor",
-        "donor",
-        "volunteer",
-        "passout-student"
-      )
-    )
-    .min(1)
-    .optional(),
+  name: personalDetailsSchema.name.optional(),
+  email: personalDetailsSchema.email.optional(),
+  mobile: personalDetailsSchema.mobile.optional(),
+  gender: personalDetailsSchema.gender.optional(),
+  batch: personalDetailsSchema.batch.optional(),
 
   // Event Preferences
-  isAttending: eventPreferencesSchema.isAttending,
-  attendees: attendeesSchema.optional(),
-  eventParticipation: eventPreferencesSchema.eventParticipation,
-  participationDetails: eventPreferencesSchema.participationDetails,
-  traditionalDress: eventPreferencesSchema.traditionalDress,
-  culturalProgram: eventPreferencesSchema.culturalProgram,
-  programType: eventPreferencesSchema.programType,
-  flowerArrangement: eventPreferencesSchema.flowerArrangement,
-  pookalamSize: eventPreferencesSchema.pookalamSize,
+  foodChoice: eventPreferencesSchema.foodChoice.optional(),
+  expectedArrivalTime: eventPreferencesSchema.expectedArrivalTime.optional(),
+  overnightAccommodation:
+    eventPreferencesSchema.overnightAccommodation.optional(),
 
-  // Additional Categories
-  sponsorshipDetails: sponsorshipDetailsSchema,
-  donationDetails: donationDetailsSchema,
-  volunteerDetails: volunteerDetailsSchema,
-  passportDetails: passportDetailsSchema,
+  // Attendees and Guests
+  attendees: attendeesSchema.optional(),
+  guests: guestsSchema,
 
   // Payment Information
   contributionAmount: paymentSchema.contributionAmount.optional(),
-  proposedAmount: paymentSchema.proposedAmount.optional(),
   paymentStatus: Joi.string()
     .valid("pending", "completed", "failed", "refunded")
     .optional(),
   paymentTransactionId: paymentSchema.paymentTransactionId.optional(),
 
   // Status Fields
-  status: Joi.string().valid("active", "cancelled", "completed").optional(),
   verified: Joi.boolean().optional(),
-  notes: Joi.string().max(500).optional(),
+  isEmailSent: Joi.boolean().optional(),
 });
 
 // Query Parameters Validation
@@ -395,14 +220,14 @@ const queryParamsSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
   sortBy: Joi.string()
-    .valid("registrationDate", "name", "email", "contributionAmount")
-    .default("registrationDate"),
+    .valid("createdAt", "name", "email", "contributionAmount", "batch")
+    .default("createdAt"),
   sortOrder: Joi.string().valid("asc", "desc").default("desc"),
-  status: Joi.string().valid("active", "cancelled", "completed").optional(),
   paymentStatus: Joi.string()
     .valid("pending", "completed", "failed", "refunded")
     .optional(),
   verified: Joi.boolean().optional(),
+  batch: Joi.string().optional(),
   search: Joi.string().trim().max(100).optional(),
 });
 

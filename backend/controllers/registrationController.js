@@ -134,6 +134,7 @@ const getRegistrations = async (req, res, next) => {
       })),
     });
   } catch (error) {
+    console.error("Error getting registrations:", error);
     next(error);
   }
 };
@@ -157,6 +158,7 @@ const getRegistration = async (req, res, next) => {
       data: registration,
     });
   } catch (error) {
+    console.error("Error getting registration:", error);
     next(error);
   }
 };
@@ -225,6 +227,7 @@ const updateRegistration = async (req, res, next) => {
       data: registration,
     });
   } catch (error) {
+    console.error("Error updating registration:", error);
     next(error);
   }
 };
@@ -250,6 +253,7 @@ const deleteRegistration = async (req, res, next) => {
       message: "Registration deleted successfully",
     });
   } catch (error) {
+    console.error("Error deleting registration:", error);
     next(error);
   }
 };
@@ -315,6 +319,7 @@ const getRegistrationStats = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("Error getting registration stats:", error);
     next(error);
   }
 };
@@ -354,6 +359,7 @@ const verifyRegistration = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("Error verifying registration:", error);
     next(error);
   }
 };
@@ -416,6 +422,7 @@ const updatePaymentStatus = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("Error updating payment status:", error);
     next(error);
   }
 };
@@ -458,6 +465,7 @@ const searchRegistration = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("Error searching registration:", error);
     next(error);
   }
 };
@@ -521,7 +529,8 @@ const downloadRegistrations = async (req, res, next) => {
     // Send file
     res.send(buffer);
   } catch (error) {
-    next(error);
+    console.error("Error downloading registrations:", error);
+      next(error);
   }
 };
 

@@ -43,7 +43,7 @@ app.use(morgan("dev"));
 app.get("/health", (req, res) => {
   res.json({
     success: true,
-    message: "Back to Hills 4.0 Alumni Registration API is running",
+    message: "Back to Hills 5.0 Alumni Registration API is running",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
   });
@@ -57,7 +57,7 @@ app.use("/api/registrations", registrationRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Welcome to Onam Registration API - UNMA Bangalore Chapter",
+    message: "Welcome to BTTH 5.0 API ",     
     version: "1.0.0",
     endpoints: {
       health: "/health",
@@ -88,7 +88,7 @@ const server = app.listen(PORT, () => {
 📡 Server listening on port ${PORT}
 🌐 Health check: http://localhost:${PORT}/health
 📋 API base URL: http://localhost:${PORT}/api
-🎉 Onam Registration API ready!
+🎉 BTTH 5.0 API ready!
   `);
 });
 

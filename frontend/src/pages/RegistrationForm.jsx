@@ -106,7 +106,7 @@ const BackToHillsRegistrationForm = () => {
 
       if (response.success === true) {
         toast.success(
-          `🎉 Back to Hills 5.0 Registration Successful! Registration ID: ${response.data.registrationId}`
+          `🎉 Back to the Hills 5.0 Registration Successful! Registration ID: ${response.data.registrationId}`
         );
         reset();
         setGuests([]);
@@ -156,7 +156,7 @@ const BackToHillsRegistrationForm = () => {
             <div className="relative overflow-hidden rounded-2xl shadow-lg">
               <img
                 src="/images/poster.jpeg"
-                alt="Back to Hills 5.0 - Alumni Meet 2025"
+                alt="Back to the Hills 5.0 - Alumni Meet 2025"
                 className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -166,7 +166,7 @@ const BackToHillsRegistrationForm = () => {
           {/* Title */}
           <div className="mb-6">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              Back to Hills 5.0
+              Back to the  Hills 5.0
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-green-500 mx-auto mb-4"></div>
             <p className="text-xl text-gray-600 font-light">
@@ -1174,7 +1174,7 @@ const BackToHillsRegistrationForm = () => {
             <div className="w-16 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 mx-auto mb-4"></div>
           </div>
           <p className="text-gray-600 text-sm max-w-2xl mx-auto leading-relaxed">
-            "Back to Hills 5.0 is more than just an alumni meet - it's a
+            "Back to the Hills 5.0 is more than just an alumni meet - it's a
             celebration of our shared memories, lasting friendships, and the
             spirit of our school community. We can't wait to see you there!"
           </p>

@@ -26,7 +26,7 @@ router.use(verifyToken);
 router.get("/search/:query", searchRegistration);
 
 // Admin routes (these would typically be protected with authentication middleware)
-router.get("/", validateQueryParams, getRegistrations);
+router.get("/",  getRegistrations);
 router.get("/download", downloadRegistrations);
 router.get("/stats/summary", getRegistrationStats);
 router.get("/send-confirmation-email", sendConfirmationEmail);

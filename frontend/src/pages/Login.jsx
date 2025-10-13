@@ -9,7 +9,7 @@ export default function Login() {
   const { login, isAuthenticated, isLoading, error, clearError } =
     useAuthStore();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated-test
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard", { replace: true });

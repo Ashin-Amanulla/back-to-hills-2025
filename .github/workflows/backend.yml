@@ -1,0 +1,131 @@
+name: Backend CI/CD
+
+on:
+    push:
+        branches: [main, develop]
+        paths:
+            - "backend/**"
+            - ".github/workflows/backend.yml"
+    pull_request:
+        branches: [main, develop]
+        paths:
+            - "backend/**"
+
+jobs:
+    test:
+        name: Test Backend
+        runs-on: self-hosted
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+                  cache-dependency-path: backend/package-lock.json
+
+            - name: Install dependencies
+              working-directory: ./backend
+              run: npm ci
+
+            - name: Run linting
+              working-directory: ./backend
+              run: |
+                  if [ -f "package.json" ] && grep -q "\"lint\"" package.json; then
+                    npm run lint
+                  else
+                    echo "No lint script found, skipping..."
+                  fi
+
+            - name: Run tests
+              working-directory: ./backend
+              run: |
+                  if [ -f "package.json" ] && grep -q "\"test\"" package.json && ! grep -q "Error: no test specified" package.json; then
+                    npm test
+                  else
+                    echo "No tests configured, skipping..."
+                  fi
+
+    deploy:
+        name: Deploy Backend
+        runs-on: self-hosted
+        needs: test
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+                  cache-dependency-path: backend/package-lock.json
+
+            - name: Create .env file
+              working-directory: ./backend
+              run: |
+                  echo "NODE_ENV=production" > .env
+                  echo "PORT=${{ secrets.BACKEND_PORT }}" >> .env
+                  echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> .env
+                  echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+                  echo "API_URL=${{ secrets.API_URL }}" >> .env
+                  echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+                  echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
+                  echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+                  echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+                  echo "EMAIL_FROM=${{ secrets.EMAIL_FROM }}" >> .env
+
+            - name: Install dependencies
+              working-directory: ./backend
+              run: npm ci --production
+
+            - name: Stop existing PM2 process
+              run: |
+                  if pm2 describe back-to-hills-backend > /dev/null 2>&1; then
+                    pm2 stop back-to-hills-backend
+                    pm2 delete back-to-hills-backend
+                  fi
+
+            - name: Start application with PM2
+              working-directory: ./backend
+              run: |
+                  pm2 start app.js --name back-to-hills-backend \
+                    --node-args="--max-old-space-size=2048" \
+                    --instances 1 \
+                    --max-memory-restart 500M \
+                    --log-date-format "YYYY-MM-DD HH:mm:ss Z" \
+                    --time
+
+            - name: Save PM2 configuration
+              run: pm2 save
+
+            - name: Check application health
+              run: |
+                  sleep 5
+                  pm2 status back-to-hills-backend
+
+            - name: Display logs
+              if: always()
+              run: pm2 logs back-to-hills-backend --lines 50 --nostream
+
+    notify:
+        name: Notify Deployment Status
+        runs-on: self-hosted
+        needs: [test, deploy]
+        if: always()
+
+        steps:
+            - name: Deployment Success
+              if: needs.deploy.result == 'success'
+              run: echo "✅ Backend deployment successful!"
+
+            - name: Deployment Failed
+              if: needs.deploy.result == 'failure'
+              run: |
+                  echo "❌ Backend deployment failed!"
+                  exit 1

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "react-toastify";
-// import { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { createRegistration } from "../api/registration.api";
 
 const BackToHillsRegistrationForm = () => {

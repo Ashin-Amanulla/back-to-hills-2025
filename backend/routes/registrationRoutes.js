@@ -18,7 +18,7 @@ const {
   validateQueryParams,
 } = require("../middlewares/validation");
 const verifyToken = require("../middlewares/auth");
-// Public routes
+// Public routess
 router.post("/", createRegistration);
 
 //create auth routes

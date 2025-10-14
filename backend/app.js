@@ -49,7 +49,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-// API routes
+// API route
 app.use("/api/users", userRoutes);
 app.use("/api/registrations", registrationRoutes);
 

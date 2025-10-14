@@ -1629,7 +1629,7 @@ const BackToHillsRegistrationForm = () => {
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
-                <span>alumni@jnvcalicut.org</span>
+                <span>btth.jnvcan@gmail.com</span>
               </div>
               <span className="text-gray-400">•</span>
               <div className="flex items-center gap-1">
@@ -1640,11 +1640,49 @@ const BackToHillsRegistrationForm = () => {
                 >
                   <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                 </svg>
-                <span>+91 94964 70738</span>
+                <span>+965 96939687</span>
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-8">
+            {/* Created by Badge */}
+            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500">
+              <span>Crafted with</span>
+              <svg
+                className="w-3.5 h-3.5 text-red-500 animate-pulse"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>by</span>
+              <a
+                href="https://www.xyvin.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors inline-flex items-center gap-1 group"
+              >
+                Xyvin Technologies
+                <svg
+                  className="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-4">
               © 2025 JNV Calicut Alumni Network. All rights reserved.
             </p>
           </div>

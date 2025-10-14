@@ -76,6 +76,7 @@ const getRegistrations = async (req, res, next) => {
       sortOrder = "desc",
       paymentStatus,
       verified,
+      status,
       batch,
       search,
     } = req.query;
@@ -85,6 +86,7 @@ const getRegistrations = async (req, res, next) => {
 
     if (paymentStatus) filter.paymentStatus = paymentStatus;
     if (verified !== undefined) filter.verified = verified === "true";
+    if (status !== undefined) filter.verified = status === "true";
     if (batch) filter.batch = batch;
 
     if (search) {
@@ -93,6 +95,7 @@ const getRegistrations = async (req, res, next) => {
         { email: { $regex: search, $options: "i" } },
         { mobile: { $regex: search, $options: "i" } },
         { batch: { $regex: search, $options: "i" } },
+        { registrationId: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -265,6 +268,61 @@ const getRegistrationStats = async (req, res, next) => {
   try {
     const stats = await Registration.getStatistics();
 
+    // Count verified and unverified registrations
+    const verifiedCount = await Registration.countDocuments({ verified: true });
+    const unverifiedCount = await Registration.countDocuments({
+      verified: false,
+    });
+
+    // Calculate payment totals
+    const verifiedPaymentTotal = await Registration.aggregate([
+      { $match: { verified: true } },
+      { $group: { _id: null, total: { $sum: "$contributionAmount" } } },
+    ]);
+
+    const unverifiedPaymentTotal = await Registration.aggregate([
+      { $match: { verified: false } },
+      { $group: { _id: null, total: { $sum: "$contributionAmount" } } },
+    ]);
+
+    // Calculate attendee statistics
+    const attendeeStats = await Registration.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAdults: {
+            $sum: { $ifNull: ["$attendees.adults", 0] },
+          },
+          totalChildren: {
+            $sum: { $ifNull: ["$attendees.children", 0] },
+          },
+          totalInfants: {
+            $sum: { $ifNull: ["$attendees.infants", 0] },
+          },
+          totalGuests: {
+            $sum: { $size: { $ifNull: ["$guests", []] } },
+          },
+        },
+      },
+    ]);
+    console.log("Attendee Statistics:", attendeeStats);
+
+    const attendeeCounts = attendeeStats[0] || {
+      totalAdults: 0,
+      totalChildren: 0,
+      totalInfants: 0,
+      totalGuests: 0,
+    };
+
+    console.log("Attendee Statistics:", attendeeCounts);
+
+    // Debug: Check sample registration data
+    const sampleReg = await Registration.findOne().select("attendees guests");
+    console.log(
+      "Sample Registration Data:",
+      JSON.stringify(sampleReg, null, 2)
+    );
+
     // Additional statistics for Back to Hills 4.0
     const batchStats = await Registration.aggregate([
       {
@@ -312,6 +370,21 @@ const getRegistrationStats = async (req, res, next) => {
       success: true,
       data: {
         ...stats,
+        verifiedCount,
+        unverifiedCount,
+        verifiedPaymentTotal: verifiedPaymentTotal[0]?.total || 0,
+        unverifiedPaymentTotal: unverifiedPaymentTotal[0]?.total || 0,
+        totalAttendees:
+          attendeeCounts.totalAdults +
+          attendeeCounts.totalChildren +
+          attendeeCounts.totalInfants +
+          attendeeCounts.totalGuests,
+        attendeeBreakdown: {
+          adults: attendeeCounts.totalAdults,
+          children: attendeeCounts.totalChildren,
+          infants: attendeeCounts.totalInfants,
+          guests: attendeeCounts.totalGuests,
+        },
         batchDistribution: batchStats,
         foodChoices: foodChoiceStats,
         arrivalTimes: arrivalTimeStats,
@@ -530,7 +603,7 @@ const downloadRegistrations = async (req, res, next) => {
     res.send(buffer);
   } catch (error) {
     console.error("Error downloading registrations:", error);
-      next(error);
+    next(error);
   }
 };
 

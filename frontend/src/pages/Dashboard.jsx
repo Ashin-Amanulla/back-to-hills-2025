@@ -1,21 +1,54 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../store/Auth";
 import DashboardLayout from "../components/DashboardLayout";
 import RegistrationsTable from "../components/RegistrationsTable";
 import StatsDashboard from "../components/StatsDashboard";
-import { downloadRegistrations } from "../api/registration.api";
+import { getRegistrationStats } from "../api/registration.api";
+import {
+  HiClipboardDocumentList,
+  HiCheckCircle,
+  HiCurrencyDollar,
+  HiUserGroup,
+  HiUsers,
+  HiShoppingCart,
+  HiHome,
+  HiClock,
+  HiAcademicCap,
+} from "react-icons/hi2";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuthStore();
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login", { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoadingStats(true);
+        const response = await getRegistrationStats();
+        if (response.success) {
+          setStats(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchStats();
+    }
+  }, [isAuthenticated]);
 
   // Get current page from location
   const getCurrentPage = () => {
@@ -46,169 +79,328 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
-              <div
-                className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-shadow duration-200"
-                onClick={() => navigate("/dashboard/registrations")}
-              >
-                <div className="flex items-center">
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <svg
-                      className="w-6 h-6 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
-                    </svg>
+            {/* Statistics Overview */}
+            {!loadingStats && stats && (
+              <>
+                {/* Primary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-lg shadow-lg text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium opacity-90">
+                          Total Registrations
+                        </p>
+                        <p className="text-3xl font-bold mt-2">
+                          {stats.totalRegistrations || 0}
+                        </p>
+                      </div>
+                      <div className="p-3 bg-opacity-20 rounded-lg">
+                        <HiClipboardDocumentList className="w-8 h-8" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      View Registrations
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Manage all registrations
-                    </p>
-                    <button
-                      onClick={() => navigate("/dashboard/registrations")}
-                      className="mt-3 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                    >
-                      View Details
-                      <svg
-                        className="ml-1 w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center">
-                  <div className="p-3 bg-green-100 rounded-lg">
-                    <svg
-                      className="w-6 h-6 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-lg shadow-lg text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium opacity-90">
+                          Verified Registrations
+                        </p>
+                        <p className="text-3xl font-bold mt-2">
+                          {stats.verifiedCount || 0}
+                        </p>
+                        <p className="text-xs opacity-75 mt-1">
+                          Unverified: {stats.unverifiedCount || 0}
+                        </p>
+                      </div>
+                      <div className="p-3  bg-opacity-20 rounded-lg">
+                        <HiCheckCircle className="w-8 h-8" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Statistics
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      View analytics and reports
-                    </p>
-                    <button
-                      onClick={() => navigate("/dashboard/stats")}
-                      className="mt-3 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                    >
-                      View Analytics
-                      <svg
-                        className="ml-1 w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div> */}
 
-              <div className="bg-white p-6 rounded-lg shadow-sm  hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center">
-                  <div className="p-3 bg-purple-100 rounded-lg">
-                    <svg
-                      className="w-6 h-6 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+                  <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-lg shadow-lg text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium opacity-90">
+                          Total Revenue
+                        </p>
+                        <p className="text-3xl font-bold mt-2">
+                          ₹{stats.totalAmount || 0}
+                        </p>
+                        <p className="text-xs opacity-75 mt-1">
+                          Verified: ₹{stats.verifiedPaymentTotal || 0}
+                        </p>
+                      </div>
+                      <div className="p-3  bg-opacity-20 rounded-lg">
+                        <HiCurrencyDollar className="w-8 h-8" />
+                      </div>
+                    </div>
                   </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Download Data
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Export registration data
-                    </p>
-                    <button
-                      onClick={async () => {
-                        try {
-                          const response = await downloadRegistrations();
-                          const blob = new Blob([response.data], {
-                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                          });
-                          const url = window.URL.createObjectURL(blob);
-                          const a = document.createElement("a");
-                          a.href = url;
-                          a.download = "registrations.xlsx";
-                          document.body.appendChild(a);
-                          a.click();
-                          window.URL.revokeObjectURL(url);
-                          document.body.removeChild(a);
-                        } catch (error) {
-                          console.error("Error downloading file:", error);
-                          alert("Failed to download file. Please try again.");
-                        }
-                      }}
-                      className="mt-3 inline-flex items-center cursor-pointer text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                    >
-                      Download Excel
-                      <svg
-                        className="ml-1 w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
+
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-lg shadow-lg text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium opacity-90">
+                          Total Attendees
+                        </p>
+                        <p className="text-3xl font-bold mt-2">
+                          {stats.totalAttendees || 0}
+                        </p>
+                        <p className="text-xs opacity-75 mt-1">
+                          A:{stats.attendeeBreakdown?.adults || 0} C:
+                          {stats.attendeeBreakdown?.children || 0} I:
+                          {stats.attendeeBreakdown?.infants || 0}
+                        </p>
+                      </div>
+                      <div className="p-3  bg-opacity-20 rounded-lg">
+                        <HiUserGroup className="w-8 h-8" />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+
+                {/* Secondary Stats - More Detailed Widgets */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Attendee Breakdown Widget */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <HiUsers className="w-5 h-5 mr-2 text-indigo-600" />
+                      Attendee Breakdown
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">
+                          Adults (18+)
+                        </span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {stats.attendeeBreakdown?.adults || 0}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-indigo-600 h-2 rounded-full"
+                          style={{
+                            width: `${
+                              ((stats.attendeeBreakdown?.adults || 0) /
+                                (stats.totalAttendees || 1)) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">
+                          Children (6-17)
+                        </span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {stats.attendeeBreakdown?.children || 0}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-blue-500 h-2 rounded-full"
+                          style={{
+                            width: `${
+                              ((stats.attendeeBreakdown?.children || 0) /
+                                (stats.totalAttendees || 1)) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">
+                          Infants (0-5)
+                        </span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {stats.attendeeBreakdown?.infants || 0}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-cyan-500 h-2 rounded-full"
+                          style={{
+                            width: `${
+                              ((stats.attendeeBreakdown?.infants || 0) /
+                                (stats.totalAttendees || 1)) *
+                              100
+                            }%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Status Widget */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <HiCheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                      Payment Status
+                    </h3>
+                    <div className="space-y-3">
+                      {stats.paymentStatusDistribution?.map((status) => (
+                        <div key={status._id}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm text-gray-600 capitalize">
+                              {status._id}
+                            </span>
+                            <span className="text-lg font-bold text-gray-900">
+                              {status.count}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                status._id === "completed"
+                                  ? "bg-green-500"
+                                  : status._id === "pending"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                              style={{
+                                width: `${
+                                  (status.count /
+                                    (stats.totalRegistrations || 1)) *
+                                  100
+                                }%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Food Preferences Widget */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <HiShoppingCart className="w-5 h-5 mr-2 text-orange-600" />
+                      Food Preferences
+                    </h3>
+                    <div className="space-y-4">
+                      {stats.foodChoices?.map((food) => (
+                        <div
+                          key={food._id}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center">
+                            <div
+                              className={`w-3 h-3 rounded-full mr-3 ${
+                                food._id === "Veg"
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              }`}
+                            ></div>
+                            <span className="text-sm font-medium text-gray-700">
+                              {food._id}
+                            </span>
+                          </div>
+                          <span className="text-lg font-bold text-gray-900">
+                            {food.count}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Accommodation Widget */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <HiHome className="w-5 h-5 mr-2 text-purple-600" />
+                      Overnight Stay
+                    </h3>
+                    <div className="space-y-4">
+                      {stats.accommodationPreferences?.map((acc) => (
+                        <div
+                          key={acc._id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm font-medium text-gray-700">
+                            {acc._id === "Yes"
+                              ? "Staying Overnight"
+                              : "Day Visit"}
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-lg font-bold text-gray-900 mr-2">
+                              {acc.count}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              (
+                              {(
+                                (acc.count / (stats.totalRegistrations || 1)) *
+                                100
+                              ).toFixed(0)}
+                              %)
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Arrival Time Widget */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <HiClock className="w-5 h-5 mr-2 text-blue-600" />
+                      Arrival Times
+                    </h3>
+                    <div className="space-y-3">
+                      {stats.arrivalTimes?.map((time) => (
+                        <div
+                          key={time._id}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-sm font-medium text-gray-700">
+                            {time._id === "8-11"
+                              ? "8-11 AM"
+                              : time._id === "11-14"
+                              ? "11 AM - 2 PM"
+                              : time._id === "14-17"
+                              ? "2-5 PM"
+                              : "5-8 PM"}
+                          </span>
+                          <span className="text-lg font-bold text-gray-900">
+                            {time.count}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top Batches Widget */}
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <HiAcademicCap className="w-5 h-5 mr-2 text-teal-600" />
+                      Top Batches
+                    </h3>
+                    <div className="space-y-2">
+                      {stats.batchDistribution
+                        ?.sort((a, b) => b.count - a.count)
+                        .slice(0, 5)
+                        .map((batch, index) => (
+                          <div
+                            key={batch._id}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center">
+                              <span className="text-xs font-medium text-gray-500 w-6">
+                                #{index + 1}
+                              </span>
+                              <span className="text-sm font-medium text-gray-700 ml-2">
+                                {batch._id}
+                              </span>
+                            </div>
+                            <span className="text-lg font-bold text-gray-900">
+                              {batch.count}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         );
     }

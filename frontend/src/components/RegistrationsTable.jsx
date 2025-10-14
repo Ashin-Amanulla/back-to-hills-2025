@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { debounce } from "lodash";
 import { toast } from "react-toastify";
-import { getRegistrations } from "../api/registration.api";
+import {
+  getRegistrations,
+  downloadRegistrations,
+} from "../api/registration.api";
 import EditRegistrationModal from "./EditRegistrationModal";
 
 const RegistrationsTable = () => {
@@ -32,7 +35,7 @@ const RegistrationsTable = () => {
         sortBy,
         sortOrder,
         ...(searchTerm && { search: searchTerm }),
-        ...(statusFilter && { status: statusFilter }),
+        ...(statusFilter && { verified: statusFilter }),
         ...(paymentFilter && { paymentStatus: paymentFilter }),
       });
 
@@ -136,6 +139,47 @@ const RegistrationsTable = () => {
               Total: {totalRegistrations} registrations
             </p>
           </div>
+          <button
+            onClick={async () => {
+              try {
+                toast.info("Downloading registrations...");
+                const response = await downloadRegistrations();
+                const blob = new Blob([response.data], {
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `registrations_${
+                  new Date().toISOString().split("T")[0]
+                }.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                toast.success("Downloaded successfully!");
+              } catch (error) {
+                console.error("Error downloading file:", error);
+                toast.error("Failed to download file. Please try again.");
+              }
+            }}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Download All
+          </button>
         </div>
 
         {/* Search and filters */}
@@ -165,7 +209,10 @@ const RegistrationsTable = () => {
             </label>
             <select
               value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
+              onChange={(e) => {
+                setPaymentFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">All</option>
@@ -175,9 +222,28 @@ const RegistrationsTable = () => {
             </select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Verification Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">All</option>
+              <option value="true">Verified</option>
+              <option value="false">Unverified</option>
+            </select>
+          </div>
+
           <div className="flex items-end">
             <button
               onClick={() => {
+                setInputValue("");
                 setSearchTerm("");
                 setStatusFilter("");
                 setPaymentFilter("");
@@ -214,8 +280,18 @@ const RegistrationsTable = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location
+                  <th
+                    onClick={() => handleSort("batch")}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  >
+                    <div className="flex items-center">
+                      Batch
+                      {sortBy === "batch" && (
+                        <span className="ml-1">
+                          {sortOrder === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Attendees
@@ -233,19 +309,11 @@ const RegistrationsTable = () => {
                       )}
                     </div>
                   </th>
-
-                  <th
-                    onClick={() => handleSort("registrationDate")}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  >
-                    <div className="flex items-center">
-                      Date
-                      {sortBy === "registrationDate" && (
-                        <span className="ml-1">
-                          {sortOrder === "asc" ? "↑" : "↓"}
-                        </span>
-                      )}
-                    </div>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Payment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -262,8 +330,12 @@ const RegistrationsTable = () => {
                       <div className="text-sm font-medium text-gray-900">
                         {registration.name}
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {registration.gender}
+                      <div className="text-xs text-gray-500">
+                        {registration.registrationId ||
+                          `BTH4${registration._id
+                            ?.toString()
+                            .slice(-8)
+                            .toUpperCase()}`}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -271,21 +343,22 @@ const RegistrationsTable = () => {
                         {registration.email}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {registration.whatsappNumber}
+                        {registration.mobile}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {registration.stateUT}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {registration.district}
+                      <div className="text-sm font-medium text-gray-900">
+                        {registration.batch}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex space-x-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {registration.totalAttendees} Total
+                          {registration.totalAttendees ||
+                            (registration.attendees?.adults || 0) +
+                              (registration.attendees?.children || 0) +
+                              (registration.attendees?.infants || 0)}{" "}
+                          Total
                         </span>
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
@@ -297,9 +370,29 @@ const RegistrationsTable = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       ₹{registration.contributionAmount}
                     </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {registration.registrationDate}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          registration.paymentStatus === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : registration.paymentStatus === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {registration.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          registration.verified
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {registration.verified ? "Verified" : "Unverified"}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <button
@@ -319,7 +412,7 @@ const RegistrationsTable = () => {
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                           />
                         </svg>
-                        Edit
+                        View/Edit
                       </button>
                     </td>
                   </tr>

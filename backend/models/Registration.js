@@ -3,6 +3,13 @@ const mongoose = require("mongoose");
 // Back to Hills 4.0 Alumni Meet Registration Schema
 const registrationSchema = new mongoose.Schema(
   {
+    // Registration ID
+    registrationId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allow null for existing documents
+    },
+
     // Basic Personal Information
     name: {
       type: String,
@@ -145,11 +152,7 @@ const registrationSchema = new mongoose.Schema(
 // Indexes
 registrationSchema.index({ paymentTransactionId: 1 });
 registrationSchema.index({ batch: 1 });
-
-// Virtual for registration ID
-registrationSchema.virtual("registrationId").get(function () {
-  return `BTH4${this._id.toString().slice(-8).toUpperCase()}`;
-});
+registrationSchema.index({ registrationId: 1 });
 
 // Virtual for total attendees (including guests)
 registrationSchema.virtual("totalAttendees").get(function () {
@@ -169,6 +172,15 @@ registrationSchema.virtual("isFreeBatch").get(function () {
       this.batch
     )
   );
+});
+
+// Pre-save hook to generate registration ID
+registrationSchema.pre("save", async function (next) {
+  // Only generate registration ID if it doesn't exist
+  if (!this.registrationId && this._id) {
+    this.registrationId = `BTH4${this._id.toString().slice(-8).toUpperCase()}`;
+  }
+  next();
 });
 
 // Method to calculate total amount

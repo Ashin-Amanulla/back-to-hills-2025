@@ -25,7 +25,7 @@ export const getRegistrations = async (params) => {
 };
 
 export const getRegistrationStats = async () => {
-  const response = await axiosInstance.get(`/registrations/stats`);
+  const response = await axiosInstance.get(`/registrations/stats/summary`);
   return response.data;
 };
 

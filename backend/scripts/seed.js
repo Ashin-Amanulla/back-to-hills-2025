@@ -6,7 +6,7 @@ const seed = async () => {
   try {
     console.log("🔌 Connecting to database...");
     await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost:27017/onam-registration"
+      process.env.MONGODB_URI || "mongodb://localhost:27017/btth-registration"
     );
     console.log("✅ Connected to database");
 

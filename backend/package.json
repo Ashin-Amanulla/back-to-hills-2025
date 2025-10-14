@@ -7,7 +7,11 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "seed": "node scripts/seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf node_modules package-lock.json",
+    "fresh-install": "npm run clean && npm cache clean --force && npm install",
+    "deploy": "npm ci --production && pm2 restart backend",
+    "logs": "pm2 logs backend"
   },
   "keywords": [
     "alumni",

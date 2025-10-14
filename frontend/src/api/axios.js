@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL||"https://api-onavesham2.unma.in/api";
+const API_URL = import.meta.env.VITE_API_URL||"https://api-btth.jnvcan.com/api";
 
 // Create axios instance with default config
 const axiosInstance = axios.create({

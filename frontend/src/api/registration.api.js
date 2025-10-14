@@ -3,7 +3,7 @@ import axiosInstance from "./axios";
 
 // backend api url
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://api-backtohills4.unma.in/api";
+  import.meta.env.VITE_API_URL || "https://api-btth.jnvcan.com/api";
 
 export const createRegistration = async (registrationData) => {
   const response = await axios.post(

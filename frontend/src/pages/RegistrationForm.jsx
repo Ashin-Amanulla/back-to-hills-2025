@@ -157,7 +157,7 @@ const BackToHillsRegistrationForm = () => {
               <img
                 src="/images/poster.jpeg"
                 alt="Back to the Hills 5.0 - Alumni Meet 2025"
-                className="w-full h-48 sm:h-64 md:h-80 lg:h-96 object-cover"
+                className="w-full h-auto max-h-[600px] sm:max-h-[700px] md:max-h-[800px] lg:max-h-[900px] object-cover object-bottom"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>
@@ -166,14 +166,14 @@ const BackToHillsRegistrationForm = () => {
           {/* Title */}
           <div className="mb-6">
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-              Back to the  Hills 5.0
+              Back to the Hills 5.0
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-green-500 mx-auto mb-4"></div>
             <p className="text-xl text-gray-600 font-light">
               School Alumni Meet Registration
             </p>
             <p className="text-lg text-gray-600 font-light">
-              Date: TBD | Location: TBD
+              Date: 27-28 December 2025 | Location: JNV Calicut Campus
             </p>
           </div>
 
@@ -287,8 +287,7 @@ const BackToHillsRegistrationForm = () => {
                   rules={{
                     required: "Mobile number is required",
                     pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: "Please enter a valid 10-digit mobile number",
+                      message: "Please enter your mobile number",
                     },
                   }}
                   render={({ field }) => (
@@ -721,7 +720,7 @@ const BackToHillsRegistrationForm = () => {
             </div>
           </motion.div>
 
-          {/* Guest Information Section */}
+          {/* Family Information Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -747,7 +746,7 @@ const BackToHillsRegistrationForm = () => {
                     </svg>
                   </div>
                   <h2 className="text-2xl font-semibold text-gray-900">
-                    Guest Information
+                    Family Information
                   </h2>
                 </div>
                 <button
@@ -768,7 +767,7 @@ const BackToHillsRegistrationForm = () => {
                       d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                     />
                   </svg>
-                  <span>Add Guest</span>
+                  <span>Add Family</span>
                 </button>
               </div>
               <div className="w-16 h-0.5 bg-orange-500"></div>
@@ -776,8 +775,8 @@ const BackToHillsRegistrationForm = () => {
 
             {guests.length === 0 ? (
               <p className="text-gray-500 text-center py-8">
-                No guests added yet. Click "Add Guest" to include additional
-                attendees.
+                No family members added yet. Click "Add Family" to include
+                additional attendees.
               </p>
             ) : (
               <div className="space-y-4">
@@ -788,7 +787,7 @@ const BackToHillsRegistrationForm = () => {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="font-medium text-gray-900">
-                        Guest {index + 1}
+                        Family {index + 1}
                       </h4>
                       <button
                         type="button"
@@ -822,7 +821,7 @@ const BackToHillsRegistrationForm = () => {
                             updateGuest(index, "name", e.target.value)
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                          placeholder="Guest name"
+                          placeholder="Family member name"
                         />
                       </div>
                       <div>
@@ -844,7 +843,7 @@ const BackToHillsRegistrationForm = () => {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Food Choice
+                          Food Preference
                         </label>
                         <select
                           value={guest.foodChoice}
@@ -1034,7 +1033,7 @@ const BackToHillsRegistrationForm = () => {
                     />
                   </div>
                   <p className="text-sm text-blue-700 mt-2 font-medium">
-                    Scan QR Code to Pay with BHIM UPI
+                    Scan QR Code to Pay.
                   </p>
                 </div>
 
@@ -1060,8 +1059,7 @@ const BackToHillsRegistrationForm = () => {
                         <strong>IFSC Code:</strong> PUNB0427400
                       </p>
                       <p>
-                        <strong>Payment Method:</strong> BHIM UPI / Bank
-                        Transfer
+                        <strong>Payment Method:</strong> UPI / Bank Transfer
                       </p>
                     </div>
                   </div>
@@ -1079,7 +1077,8 @@ const BackToHillsRegistrationForm = () => {
                           clipRule="evenodd"
                         />
                       </svg>
-                      Please  mention your name/batch number in the payment description.
+                      Please mention your name/batch number in the payment
+                      description.
                     </p>
                   </div>
                 </div>
@@ -1156,7 +1155,7 @@ const BackToHillsRegistrationForm = () => {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span>Complete Back to Hills 4.0 Registration</span>
+                  <span>Complete Back to Hills 5.0 Registration</span>
                 </div>
               )}
             </button>

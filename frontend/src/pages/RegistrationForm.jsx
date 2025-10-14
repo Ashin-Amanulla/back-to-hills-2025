@@ -8,7 +8,6 @@ import { createRegistration } from "../api/registration.api";
 const BackToHillsRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [guests, setGuests] = useState([]);
-  const [formProgress, setFormProgress] = useState(0);
 
   const {
     control,
@@ -47,64 +46,47 @@ const BackToHillsRegistrationForm = () => {
 
   const watchedValues = watch();
 
-  // Calculate form progress
-  useEffect(() => {
-    const requiredFields = [
-      watchedValues.name,
-      watchedValues.email,
-      watchedValues.mobile,
-      watchedValues.gender,
-      watchedValues.batch,
-      watchedValues.foodChoice,
-      watchedValues.expectedArrivalTime,
-      watchedValues.overnightAccommodation,
-      watchedValues.paymentTransactionId,
-    ];
-
-    const filledFields = requiredFields.filter(
-      (field) => field && field !== ""
-    ).length;
-    const progress = Math.round((filledFields / requiredFields.length) * 100);
-    setFormProgress(progress);
-  }, [watchedValues]);
-
   // Calculate payment amount based on batch and attendees
   useEffect(() => {
-    if (watchedValues.batch && watchedValues.attendees) {
+    if (watchedValues.batch) {
       const batchNumber = parseInt(watchedValues.batch.split(" ")[1]);
       const isFreeBatch = batchNumber >= 28 && batchNumber <= 32;
 
+      const adultCount = watchedValues.attendees?.adults || 0;
+      const childCount = watchedValues.attendees?.children || 0;
+
       let total = 0;
 
-      // Primary registrant pricing
-      if (isFreeBatch) {
-        // Free for primary registrant
-        total += 0;
-      } else {
-        // Rs 300 for primary registrant (1 adult)
-        total += 300;
+      // Calculate adult charges
+      if (adultCount > 0) {
+        if (isFreeBatch) {
+          // First adult is free for batches 28-32
+          total += 0;
+          // Additional adults (beyond the first one)
+          if (adultCount > 1) {
+            total += (adultCount - 1) * 200;
+          }
+        } else {
+          // First adult costs 300
+          total += 300;
+          // Additional adults (beyond the first one)
+          if (adultCount > 1) {
+            total += (adultCount - 1) * 200;
+          }
+        }
       }
 
-      // Additional adults (beyond the first one)
-      const additionalAdults = Math.max(
-        (watchedValues.attendees?.adults || 0) - 1,
-        0
-      );
-      total += additionalAdults * 200;
+      // Children (6-17 years) - Rs 150 each
+      total += childCount * 150;
 
-      // Children (6-17)
-      total += (watchedValues.attendees?.children || 0) * 150;
-
-      // Infants are free
+      // Infants are free (no charge)
 
       setValue("contributionAmount", total);
     }
   }, [
     watchedValues.batch,
-    watchedValues.attendees,
     watchedValues.attendees?.adults,
     watchedValues.attendees?.children,
-    watchedValues.attendees?.infants,
     setValue,
   ]);
 
@@ -175,32 +157,6 @@ const BackToHillsRegistrationForm = () => {
 
       {/* Content Container */}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-8 relative z-10">
-        {/* Progress Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 sticky top-4 z-50"
-        >
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-white/20">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-700">
-                Registration Progress
-              </span>
-              <span className="text-sm font-bold text-emerald-600">
-                {formProgress}%
-              </span>
-            </div>
-            <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${formProgress}%` }}
-                transition={{ duration: 0.5 }}
-              />
-            </div>
-          </div>
-        </motion.div>
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -217,13 +173,6 @@ const BackToHillsRegistrationForm = () => {
                 className="w-full h-auto max-h-[500px] sm:max-h-[600px] md:max-h-[700px] object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-
-              {/* Overlay Badge */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-sm px-8 py-4 rounded-2xl shadow-2xl">
-                <p className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  Back to the Hills 5.0
-                </p>
-              </div>
             </div>
           </div>
 
@@ -1017,115 +966,29 @@ const BackToHillsRegistrationForm = () => {
             </div>
           </motion.div>
 
-          {/* Family Information Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-2xl p-6 sm:p-8 lg:p-10 hover:shadow-orange-200/50 transition-all duration-300"
-          >
-            <div className="mb-8">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                      Family Information
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Add your family members (optional)
-                    </p>
-                  </div>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  onClick={addGuest}
-                  className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
-                  <span className="font-semibold">Add Family Member</span>
-                </motion.button>
-              </div>
-              <div className="h-1 w-24 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"></div>
-            </div>
+          {/* Family Information Section - Only show if total attendees > 1 */}
+          <AnimatePresence>
+            {(() => {
+              const totalAttendees =
+                (watchedValues.attendees?.adults || 0) +
+                (watchedValues.attendees?.children || 0) +
+                (watchedValues.attendees?.infants || 0);
 
-            {guests.length === 0 ? (
-              <div className="text-center py-12 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border-2 border-dashed border-orange-200">
-                <svg
-                  className="w-16 h-16 mx-auto text-orange-300 mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              return totalAttendees > 1 ? (
+                <motion.div
+                  key="family-info"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="bg-white/70 backdrop-blur-xl rounded-3xl border border-white/40 shadow-2xl p-6 sm:p-8 lg:p-10 hover:shadow-orange-200/50 transition-all duration-300"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                <p className="text-gray-500 text-base">
-                  No family members added yet.
-                </p>
-                <p className="text-gray-400 text-sm mt-1">
-                  Click "Add Family Member" to include additional attendees.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {guests.map((guest, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -100 }}
-                      className="bg-gradient-to-r from-orange-50 to-amber-50 p-5 rounded-2xl border-2 border-orange-100 hover:border-orange-300 transition-all duration-200"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                          <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-lg flex items-center justify-center text-sm font-bold">
-                            {index + 1}
-                          </span>
-                          Family Member {index + 1}
-                        </h4>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          type="button"
-                          onClick={() => removeGuest(index)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
+                  <div className="mb-8">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
                           <svg
-                            className="w-5 h-5"
+                            className="w-6 h-6 text-white"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -1134,83 +997,191 @@ const BackToHillsRegistrationForm = () => {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
                             />
                           </svg>
-                        </motion.button>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                            Family Information
+                          </h2>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Add your family members (optional)
+                          </p>
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="group">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Name
-                          </label>
-                          <input
-                            type="text"
-                            value={guest.name}
-                            onChange={(e) =>
-                              updateGuest(index, "name", e.target.value)
-                            }
-                            className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 placeholder:text-gray-400 group-hover:border-orange-300"
-                            placeholder="Name"
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        type="button"
+                        onClick={addGuest}
+                        className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                           />
-                        </div>
-                        <div className="group">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Gender
-                          </label>
-                          <select
-                            value={guest.gender}
-                            onChange={(e) =>
-                              updateGuest(index, "gender", e.target.value)
-                            }
-                            className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 group-hover:border-orange-300"
+                        </svg>
+                        <span className="font-semibold">Add Family Member</span>
+                      </motion.button>
+                    </div>
+                    <div className="h-1 w-24 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"></div>
+                  </div>
+
+                  {guests.length === 0 ? (
+                    <div className="text-center py-12 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border-2 border-dashed border-orange-200">
+                      <svg
+                        className="w-16 h-16 mx-auto text-orange-300 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                      <p className="text-gray-500 text-base">
+                        No family members added yet.
+                      </p>
+                      <p className="text-gray-400 text-sm mt-1">
+                        Click "Add Family Member" to include additional
+                        attendees.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <AnimatePresence>
+                        {guests.map((guest, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, x: -100 }}
+                            className="bg-gradient-to-r from-orange-50 to-amber-50 p-5 rounded-2xl border-2 border-orange-100 hover:border-orange-300 transition-all duration-200"
                           >
-                            <option value="">Select</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
-                        <div className="group">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Food
-                          </label>
-                          <select
-                            value={guest.foodChoice}
-                            onChange={(e) =>
-                              updateGuest(index, "foodChoice", e.target.value)
-                            }
-                            className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 group-hover:border-orange-300"
-                          >
-                            <option value="">Select</option>
-                            <option value="Veg">🥗 Veg</option>
-                            <option value="Non-Veg">🍗 Non-Veg</option>
-                          </select>
-                        </div>
-                        <div className="group">
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Age Category
-                          </label>
-                          <select
-                            value={guest.ageCategory}
-                            onChange={(e) =>
-                              updateGuest(index, "ageCategory", e.target.value)
-                            }
-                            className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 group-hover:border-orange-300"
-                          >
-                            <option value="">Select</option>
-                            <option value="Adult">Adult (18+)</option>
-                            <option value="Child">Child (6-17)</option>
-                            <option value="Infant">Infant (0-5)</option>
-                          </select>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </motion.div>
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                                <span className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+                                  {index + 1}
+                                </span>
+                                Family Member {index + 1}
+                              </h4>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                type="button"
+                                onClick={() => removeGuest(index)}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <svg
+                                  className="w-5 h-5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </motion.button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                              <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                  Name
+                                </label>
+                                <input
+                                  type="text"
+                                  value={guest.name}
+                                  onChange={(e) =>
+                                    updateGuest(index, "name", e.target.value)
+                                  }
+                                  className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 placeholder:text-gray-400 group-hover:border-orange-300"
+                                  placeholder="Name"
+                                />
+                              </div>
+                              <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                  Gender
+                                </label>
+                                <select
+                                  value={guest.gender}
+                                  onChange={(e) =>
+                                    updateGuest(index, "gender", e.target.value)
+                                  }
+                                  className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 group-hover:border-orange-300"
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Other">Other</option>
+                                </select>
+                              </div>
+                              <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                  Food
+                                </label>
+                                <select
+                                  value={guest.foodChoice}
+                                  onChange={(e) =>
+                                    updateGuest(
+                                      index,
+                                      "foodChoice",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 group-hover:border-orange-300"
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Veg">🥗 Veg</option>
+                                  <option value="Non-Veg">🍗 Non-Veg</option>
+                                </select>
+                              </div>
+                              <div className="group">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                  Age Category
+                                </label>
+                                <select
+                                  value={guest.ageCategory}
+                                  onChange={(e) =>
+                                    updateGuest(
+                                      index,
+                                      "ageCategory",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full px-4 py-2.5 bg-white/70 border-2 border-orange-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 group-hover:border-orange-300"
+                                >
+                                  <option value="">Select</option>
+                                  <option value="Adult">Adult (18+)</option>
+                                  <option value="Child">Child (6-17)</option>
+                                  <option value="Infant">Infant (0-5)</option>
+                                </select>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </motion.div>
+              ) : null;
+            })()}
+          </AnimatePresence>
 
           {/* Payment Section */}
           <motion.div

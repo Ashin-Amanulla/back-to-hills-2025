@@ -143,7 +143,6 @@ const registrationSchema = new mongoose.Schema(
 );
 
 // Indexes
-registrationSchema.index({ email: 1 });
 registrationSchema.index({ paymentTransactionId: 1 });
 registrationSchema.index({ batch: 1 });
 

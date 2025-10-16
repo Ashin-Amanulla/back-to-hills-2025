@@ -70,8 +70,8 @@ const createRegistration = async (req, res, next) => {
 const getRegistrations = async (req, res, next) => {
   try {
     const {
-      page = 1,
-      limit = 10,
+      page: pageParam = 1,
+      limit: limitParam = 10,
       sortBy = "createdAt",
       sortOrder = "desc",
       paymentStatus,
@@ -80,6 +80,10 @@ const getRegistrations = async (req, res, next) => {
       batch,
       search,
     } = req.query;
+
+    // Parse pagination parameters as integers
+    const page = parseInt(pageParam, 10);
+    const limit = parseInt(limitParam, 10);
 
     // Build filter object
     const filter = {};
@@ -103,8 +107,14 @@ const getRegistrations = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     // Execute query with pagination
+    // Add secondary sort by _id to ensure consistent ordering across pages
+    const sortOptions = {
+      [sortBy]: sortOrder === "desc" ? -1 : 1,
+      _id: 1, // Always sort by _id as secondary sort for consistency
+    };
+
     const registrations = await Registration.find(filter)
-      .sort({ [sortBy]: sortOrder === "desc" ? -1 : 1 })
+      .sort(sortOptions)
       .skip(skip)
       .limit(limit)
       .select("-__v");

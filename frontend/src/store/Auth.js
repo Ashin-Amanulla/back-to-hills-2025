@@ -56,6 +56,20 @@ const useAuthStore = create(
         });
       },
 
+      // Force logout on auth errors (invalid/expired token)
+      forceLogout: () => {
+        // Clear token from localStorage
+        localStorage.removeItem("adminToken");
+
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+          isLoading: false,
+          error: "Session expired. Please login again.",
+        });
+      },
+
       clearError: () => {
         set({ error: null });
       },

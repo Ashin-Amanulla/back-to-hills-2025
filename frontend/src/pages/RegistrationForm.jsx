@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { createRegistration } from "../api/registration.api";
 
 const BackToHillsRegistrationForm = () => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [guests, setGuests] = useState([]);
 
@@ -15,7 +17,6 @@ const BackToHillsRegistrationForm = () => {
     watch,
     setValue,
     formState: { errors, isValid },
-    reset,
   } = useForm({
     mode: "onChange",
     defaultValues: {
@@ -111,10 +112,22 @@ const BackToHillsRegistrationForm = () => {
 
       if (response.success === true) {
         toast.success(
-          `🎉 Back to the Hills 5.0 Registration Successful! Registration ID: ${response.data.registrationId}`
+          `🎉 Registration Successful! ID: ${response.data.registrationId}`,
+          { autoClose: 2000 }
         );
-        reset();
-        setGuests([]);
+
+        // Redirect to success page with registration data
+        setTimeout(() => {
+          navigate("/registration-success", {
+            state: {
+              registrationId: response.data.registrationId,
+              name: data.name,
+              email: data.email,
+              batch: data.batch,
+              contributionAmount: data.contributionAmount,
+            },
+          });
+        }, 1500);
       } else {
         toast.error(response.message || "Registration failed");
       }
@@ -1535,7 +1548,7 @@ const BackToHillsRegistrationForm = () => {
               whileTap={!isSubmitting && isValid ? { scale: 0.98 } : {}}
               type="submit"
               disabled={isSubmitting || !isValid}
-              className={`group relative w-full py-5 px-6 text-lg font-bold rounded-2xl transition-all duration-300 overflow-hidden ${
+              className={`group relative w-full py-5 px-6 text-base sm:text-lg font-bold rounded-2xl transition-all duration-300 overflow-hidden ${
                 isSubmitting || !isValid
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white shadow-2xl hover:shadow-emerald-500/50 active:shadow-lg"
@@ -1549,12 +1562,14 @@ const BackToHillsRegistrationForm = () => {
                 {isSubmitting ? (
                   <div className="flex items-center justify-center space-x-3">
                     <div className="animate-spin rounded-full h-6 w-6 border-3 border-white border-t-transparent"></div>
-                    <span>Submitting Your Registration...</span>
+                    <span className="text-sm sm:text-base">
+                      Submitting Your Registration...
+                    </span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center space-x-3">
+                  <div className="flex items-center justify-center space-x-2 sm:space-x-3">
                     <svg
-                      className="w-6 h-6"
+                      className="w-5 h-5 sm:w-6 sm:h-6"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1568,7 +1583,7 @@ const BackToHillsRegistrationForm = () => {
                     </svg>
                     <span>Complete Registration for Back to Hills 5.0</span>
                     <svg
-                      className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                      className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1585,70 +1600,20 @@ const BackToHillsRegistrationForm = () => {
               </div>
             </motion.button>
           </motion.div>
-        </form>
 
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-center mt-20 pt-12 border-t-2 border-gradient-to-r from-emerald-200 via-teal-200 to-blue-200"
-        >
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="h-1 w-20 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"></div>
-              <div className="h-1.5 w-8 bg-gradient-to-r from-teal-500 to-blue-500 rounded-full"></div>
-              <div className="h-1 w-4 bg-blue-500 rounded-full"></div>
-            </div>
-          </div>
-
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 backdrop-blur-sm border border-emerald-200/50 rounded-2xl p-8">
-              <p className="text-gray-700 text-lg leading-relaxed italic font-medium">
-                "Back to the Hills 5.0 is more than just an alumni reunion -
-                it's a celebration of our shared memories, lasting friendships,
-                and the spirit of our school community. We can't wait to see you
-                there!"
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 text-2xl font-bold">
-              <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 bg-clip-text text-transparent">
-                Welcome Back to the Hills!
+          {/* Crafted by Xyvin Technologies - Mobile Friendly */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="mt-8 text-center"
+          >
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200">
+              <span className="text-xs sm:text-sm text-gray-600">
+                Crafted with
               </span>
-              <span className="text-3xl animate-bounce">🏔️</span>
-            </div>
-
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <svg
-                  className="w-4 h-4 text-emerald-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-                <span>btth.jnvcan@gmail.com</span>
-              </div>
-              <span className="text-gray-400">•</span>
-              <div className="flex items-center gap-1">
-                <svg
-                  className="w-4 h-4 text-teal-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                </svg>
-                <span>+91 9632755221</span>
-              </div>
-            </div>
-
-            {/* Created by Badge */}
-            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-500">
-              <span>Crafted with</span>
               <svg
-                className="w-3.5 h-3.5 text-red-500 animate-pulse"
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500 animate-pulse"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -1658,16 +1623,16 @@ const BackToHillsRegistrationForm = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>by</span>
+              <span className="text-xs sm:text-sm text-gray-600">by</span>
               <a
                 href="https://www.xyvin.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors inline-flex items-center gap-1 group"
+                className="font-semibold text-sm sm:text-base text-emerald-600 hover:text-emerald-700 transition-colors inline-flex items-center gap-1 group"
               >
                 Xyvin Technologies
                 <svg
-                  className="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
+                  className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1681,11 +1646,61 @@ const BackToHillsRegistrationForm = () => {
                 </svg>
               </a>
             </div>
+          </motion.div>
+        </form>
 
-            <p className="text-xs text-gray-500 mt-4">
-              © 2025 JNV Calicut Alumni Network. All rights reserved.
-            </p>
+        {/* Simple Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="text-center mt-12 sm:mt-16 space-y-4 sm:space-y-6"
+        >
+          <div className="flex items-center justify-center gap-3 text-xl sm:text-2xl font-bold">
+            <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 bg-clip-text text-transparent">
+              Welcome Back to the Hills!
+            </span>
+            <span className="text-2xl sm:text-3xl animate-bounce">🏔️</span>
           </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-1">
+              <svg
+                className="w-4 h-4 text-emerald-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              </svg>
+              <a
+                href="mailto:btth.jnvcan@gmail.com"
+                className="hover:text-emerald-600 transition-colors"
+              >
+                btth.jnvcan@gmail.com
+              </a>
+            </div>
+            <span className="hidden sm:inline text-gray-400">•</span>
+            <div className="flex items-center gap-1">
+              <svg
+                className="w-4 h-4 text-teal-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+              </svg>
+              <a
+                href="tel:+919632755221"
+                className="hover:text-teal-600 transition-colors"
+              >
+                +91 9632755221
+              </a>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500">
+            © 2025 JNV Calicut Alumni Network. All rights reserved.
+          </p>
         </motion.div>
       </div>
     </div>

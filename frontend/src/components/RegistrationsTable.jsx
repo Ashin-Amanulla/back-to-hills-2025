@@ -15,6 +15,7 @@ const RegistrationsTable = () => {
   const [inputValue, setInputValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
+  const [batchFilter, setBatchFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRegistrations, setTotalRegistrations] = useState(0);
@@ -37,6 +38,7 @@ const RegistrationsTable = () => {
         ...(searchTerm && { search: searchTerm }),
         ...(statusFilter && { verified: statusFilter }),
         ...(paymentFilter && { paymentStatus: paymentFilter }),
+        ...(batchFilter && { batch: batchFilter }),
       });
 
       const response = await getRegistrations(params);
@@ -56,7 +58,15 @@ const RegistrationsTable = () => {
       setLoading(false);
       setSearchLoading(false);
     }
-  }, [currentPage, sortBy, sortOrder, searchTerm, statusFilter, paymentFilter]);
+  }, [
+    currentPage,
+    sortBy,
+    sortOrder,
+    searchTerm,
+    statusFilter,
+    paymentFilter,
+    batchFilter,
+  ]);
 
   useEffect(() => {
     fetchRegistrations();
@@ -183,7 +193,7 @@ const RegistrationsTable = () => {
         </div>
 
         {/* Search and filters */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Search
@@ -240,6 +250,54 @@ const RegistrationsTable = () => {
             </select>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Batch
+            </label>
+            <select
+              value={batchFilter}
+              onChange={(e) => {
+                setBatchFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">All Batches</option>
+              <option value="Batch 1">Batch 1</option>
+              <option value="Batch 2">Batch 2</option>
+              <option value="Batch 3">Batch 3</option>
+              <option value="Batch 4">Batch 4</option>
+              <option value="Batch 5">Batch 5</option>
+              <option value="Batch 6">Batch 6</option>
+              <option value="Batch 7">Batch 7</option>
+              <option value="Batch 8">Batch 8</option>
+              <option value="Batch 9">Batch 9</option>
+              <option value="Batch 10">Batch 10</option>
+              <option value="Batch 11">Batch 11</option>
+              <option value="Batch 12">Batch 12</option>
+              <option value="Batch 13">Batch 13</option>
+              <option value="Batch 14">Batch 14</option>
+              <option value="Batch 15">Batch 15</option>
+              <option value="Batch 16">Batch 16</option>
+              <option value="Batch 17">Batch 17</option>
+              <option value="Batch 18">Batch 18</option>
+              <option value="Batch 19">Batch 19</option>
+              <option value="Batch 20">Batch 20</option>
+              <option value="Batch 21">Batch 21</option>
+              <option value="Batch 22">Batch 22</option>
+              <option value="Batch 23">Batch 23</option>
+              <option value="Batch 24">Batch 24</option>
+              <option value="Batch 25">Batch 25</option>
+              <option value="Batch 26">Batch 26</option>
+              <option value="Batch 27">Batch 27</option>
+              <option value="Batch 28">Batch 28</option>
+              <option value="Batch 29">Batch 29</option>
+              <option value="Batch 30">Batch 30</option>
+              <option value="Batch 31">Batch 31</option>
+              <option value="Batch 32">Batch 32</option>
+            </select>
+          </div>
+
           <div className="flex items-end">
             <button
               onClick={() => {
@@ -247,6 +305,7 @@ const RegistrationsTable = () => {
                 setSearchTerm("");
                 setStatusFilter("");
                 setPaymentFilter("");
+                setBatchFilter("");
                 setCurrentPage(1);
               }}
               className="w-full px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"

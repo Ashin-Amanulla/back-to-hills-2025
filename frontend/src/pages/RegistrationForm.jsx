@@ -46,6 +46,15 @@ const BackToHillsRegistrationForm = () => {
   });
 
   const watchedValues = watch();
+  const adultCount = watchedValues.attendees?.adults || 0;
+  const childCount = watchedValues.attendees?.children || 0;
+  const infantCount = watchedValues.attendees?.infants || 0;
+
+  useEffect(() => {
+    if (adultCount < 1) {
+      setValue("attendees.adults", 1);
+    }
+  }, [adultCount, setValue]);
 
   // Calculate payment amount based on batch and attendees
   useEffect(() => {
@@ -53,28 +62,18 @@ const BackToHillsRegistrationForm = () => {
       const batchNumber = parseInt(watchedValues.batch.split(" ")[1]);
       const isFreeBatch = batchNumber >= 28 && batchNumber <= 32;
 
-      const adultCount = watchedValues.attendees?.adults || 0;
-      const childCount = watchedValues.attendees?.children || 0;
+      const billableAdultCount = Math.max(adultCount, 1);
+      const additionalAdults = Math.max(billableAdultCount - 1, 0);
 
       let total = 0;
 
       // Calculate adult charges
-      if (adultCount > 0) {
-        if (isFreeBatch) {
-          // First adult is free for batches 28-32
-          total += 0;
-          // Additional adults (beyond the first one)
-          if (adultCount > 1) {
-            total += (adultCount - 1) * 200;
-          }
-        } else {
-          // First adult costs 300
-          total += 300;
-          // Additional adults (beyond the first one)
-          if (adultCount > 1) {
-            total += (adultCount - 1) * 200;
-          }
-        }
+      if (isFreeBatch) {
+        // First adult is free for batches 28-32
+        total += additionalAdults * 200;
+      } else {
+        // First adult costs 300
+        total += 300 + additionalAdults * 200;
       }
 
       // Children (6-17 years) - Rs 150 each
@@ -84,15 +83,17 @@ const BackToHillsRegistrationForm = () => {
 
       setValue("contributionAmount", total);
     }
-  }, [
-    watchedValues.batch,
-    watchedValues.attendees?.adults,
-    watchedValues.attendees?.children,
-    setValue,
-  ]);
+  }, [watchedValues.batch, adultCount, childCount, setValue]);
 
   // Handle form submission
   const onSubmit = async (data) => {
+    const submittedAdultCount = parseInt(data.attendees?.adults, 10) || 0;
+    if (submittedAdultCount < 1) {
+      toast.error("At least one adult attendee is required.");
+      setValue("attendees.adults", 1);
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -787,12 +788,12 @@ const BackToHillsRegistrationForm = () => {
                     whileTap={{ scale: 0.9 }}
                     type="button"
                     onClick={() => {
-                      const current = watchedValues.attendees?.adults || 0;
-                      if (current > 0) {
-                        setValue("attendees.adults", current - 1);
+                      if (adultCount > 1) {
+                        setValue("attendees.adults", adultCount - 1);
                       }
                     }}
-                    className="w-12 h-12 bg-white border-2 border-purple-200 text-purple-600 rounded-xl hover:bg-purple-50 hover:border-purple-400 transition-all duration-200 flex items-center justify-center shadow-sm active:shadow-none"
+                    disabled={adultCount <= 1}
+                    className="w-12 h-12 bg-white border-2 border-purple-200 text-purple-600 rounded-xl hover:bg-purple-50 hover:border-purple-400 transition-all duration-200 flex items-center justify-center shadow-sm active:shadow-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:border-gray-200 disabled:text-gray-400"
                   >
                     <svg
                       className="w-5 h-5"
@@ -1247,12 +1248,19 @@ const BackToHillsRegistrationForm = () => {
                 <div className="space-y-4">
                   {(() => {
                     const batchNumber = parseInt(
-                      watchedValues.batch?.split(" ")[1]
+                      watchedValues.batch?.split(" ")[1],
+                      10
                     );
                     const isFreeBatch = batchNumber >= 28 && batchNumber <= 32;
-                    const adultCount = watchedValues.attendees?.adults || 0;
-                    const childCount = watchedValues.attendees?.children || 0;
-                    const infantCount = watchedValues.attendees?.infants || 0;
+                    const billableAdultCount = Math.max(adultCount, 1);
+                    const additionalAdultsForBilling = Math.max(
+                      billableAdultCount - 1,
+                      0
+                    );
+                    const additionalAdultsForDisplay = Math.max(
+                      adultCount - 1,
+                      0
+                    );
 
                     return (
                       <>
@@ -1268,14 +1276,14 @@ const BackToHillsRegistrationForm = () => {
                                   1 × ₹0 = ₹0
                                 </span>
                               </div>
-                              {adultCount > 1 && (
+                              {additionalAdultsForDisplay > 0 && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">
                                     👥 Additional Adults
                                   </span>
                                   <span className="font-bold text-gray-900">
-                                    {adultCount - 1} × ₹200 = ₹
-                                    {(adultCount - 1) * 200}
+                                    {additionalAdultsForDisplay} × ₹200 = ₹
+                                    {additionalAdultsForBilling * 200}
                                   </span>
                                 </div>
                               )}
@@ -1290,14 +1298,14 @@ const BackToHillsRegistrationForm = () => {
                                   1 × ₹300 = ₹300
                                 </span>
                               </div>
-                              {adultCount > 1 && (
+                              {additionalAdultsForDisplay > 0 && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-gray-700">
                                     👥 Additional Adults
                                   </span>
                                   <span className="font-bold text-gray-900">
-                                    {adultCount - 1} × ₹200 = ₹
-                                    {(adultCount - 1) * 200}
+                                    {additionalAdultsForDisplay} × ₹200 = ₹
+                                    {additionalAdultsForBilling * 200}
                                   </span>
                                 </div>
                               )}

@@ -748,7 +748,7 @@ const BackToHillsRegistrationForm = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Number of Attendees
+                    Number of Attendees including you
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
                     How many people will join you?
